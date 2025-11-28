@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Background switcher — jsonbin.io</title>
+  <style>
+    :root{--gap:12px}
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg,white);transition:background .25s ease;min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .card{background:rgba(255,255,255,0.85);backdrop-filter:blur(6px);padding:20px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.12);max-width:420px;width:100%}
+    h1{margin:0 0 8px;font-size:18px}
+    p{margin:0 0 14px;color:#444}
+    .buttons{display:flex;gap:var(--gap);flex-wrap:wrap}
+    button{flex:1;padding:10px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+    .status{margin-top:12px;font-size:13px;color:#333}
+    .small{font-size:12px;color:#666;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Меняем фон — синхронизация через jsonbin.io</h1>
+    <p>Нажми на кнопку — фон сменится и сохранится в вашей jsonbin базе. С любого другого устройства при загрузке страницы фон подтянется.</p>
+
+    <div class="buttons">
+      <button data-color="red" style="background:red;color:white">Красный</button>
+      <button data-color="blue" style="background:blue;color:white">Синий</button>
+      <button data-color="green" style="background:green;color:white">Зелёный</button>
+      <button data-color="yellow" style="background:gold;color:#111">Жёлтый</button>
+    </div>
+
+    <div class="status" id="status">Статус: готов</div>
+    <div class="small">Автообновление: при загрузке страницы берётся значение из jsonbin.io</div>
+  </div>
+
+  <script>
+    // === ВАЖНО ===
+    // Ниже вставлены значения, которые вы передали: binId и apiKey.
+    // Если этот HTML будет размещён публично — любой сможет прочитать ваш ключ и изменить данные в вашей базе.
+    // Рекомендация: использовать прокси/серверную функцию для хранения ключа (безопаснее), или создать ограниченные права в сервисе.
+        const BIN_ID = '6929f844d0ea881f400654bb';
+        const API_KEY = '$2a$10$HMxMwoPKiOtVWm/jzd1MoeGqMRHVlcqEnIngig1Am1kUTEqGIxXdm';
+
+        const ENDPOINT = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        const statusEl = document.getElementById('status');
+
+        function setStatus(text, isError){
+        statusEl.textContent = 'Статус: ' + text;
+        statusEl.style.color = isError ? 'crimson' : '#333';
+        }
+
+    async function fetchCurrentBin(){
+      setStatus('загрузка...');
+      try{
+        const res = await fetch(ENDPOINT, {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        if(!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        const json = await res.json();
+        // jsonbin v3 возвращает содержимое в json.record
+        const record = json.record || {};
+        return record;
+      }catch(err){
+        console.error(err);
+        setStatus('ошибка при загрузке: ' + err.message, true);
+        return null;
+      }
+    }
+
+    async function updateBin(record){
+      setStatus('сохранение...');
+      try{
+        const res = await fetch(ENDPOINT, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': API_KEY
+          },
+          body: JSON.stringify(record)
+        });
+        if(!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        setStatus('сохранено');
+      }catch(err){
+        console.error(err);
+        setStatus('ошибка при сохранении: ' + err.message, true);
+      }
+    }
+
+    function applyBackground(color){
+      document.documentElement.style.setProperty('--bg', color);
+      document.body.style.background = color;
+    }
+
+    // Когда пользователь нажал кнопку — применяем фон и сохраняем в jsonbin
+    document.querySelectorAll('button[data-color]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const color = btn.dataset.color;
+        applyBackground(color);
+
+        // Подготовим запись: если в bin есть availableBackgrounds — сохраним вместе
+        const current = await fetchCurrentBin();
+        const record = current || {};
+        record.currentBackground = color;
+        if(!record.availableBackgrounds) record.availableBackgrounds = ['red','blue','green','yellow'];
+
+        // Сохраняем
+        await updateBin(record);
+      });
+    });
+
+    // При загрузке страницы — подтягиваем значение из bin
+    (async function init(){
+      const record = await fetchCurrentBin();
+      if(record && record.currentBackground){
+        applyBackground(record.currentBackground);
+        setStatus('фон загружен: ' + record.currentBackground);
+      } else if(record){
+        // если записи нет — инициализируем её
+        const initRecord = record;
+        if(!initRecord.availableBackgrounds) initRecord.availableBackgrounds = ['red','blue','green','yellow'];
+        if(!initRecord.currentBackground) initRecord.currentBackground = 'white';
+        await updateBin(initRecord);
+        applyBackground(initRecord.currentBackground);
+      }
+    })();
+  </script>
+</body>
+</html>
