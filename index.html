@@ -43,6 +43,29 @@ function setStatus(text, isError) {
   statusEl.style.color = isError ? 'crimson' : '#333';
 }
 
+
+// Частота обновления в миллисекундах
+const POLL_INTERVAL = 2000; // 2 секунды
+
+let lastColor = null;
+
+async function pollBackground() {
+  try {
+    const record = await fetchCurrentBin();
+    if(record && record.currentBackground && record.currentBackground !== lastColor){
+      lastColor = record.currentBackground;
+      applyBackground(lastColor);
+      setStatus('Фон обновлён: ' + lastColor);
+    }
+  } catch(err){
+    console.error('Ошибка при автообновлении:', err);
+  }
+}
+
+// Запускаем опрос каждые 2 секунды
+setInterval(pollBackground, POLL_INTERVAL);
+
+
 function applyBackground(color) {
   document.body.style.background = color;
 }
