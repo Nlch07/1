@@ -6,20 +6,23 @@
 <title>Astik Messenger</title>
 <style>
 :root {
-  --primary: #4a6cf7;
-  --primary-dark: #3a5ce5;
-  --secondary: #f1f5ff;
-  --bg: #f8fafc;
-  --white: #ffffff;
-  --gray-light: #e2e8f0;
-  --gray: #94a3b8;
-  --gray-dark: #64748b;
-  --black: #1e293b;
-  --success: #10b981;
-  --danger: #ef4444;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --primary: #7C3AED;
+  --primary-light: #8B5CF6;
+  --secondary: #10B981;
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-dark: #F1F5F9;
+  --text: #1E293B;
+  --text-light: #64748B;
+  --border: #E2E8F0;
+  --online: #10B981;
+  --offline: #94A3B8;
+  --typing: #F59E0B;
+  --my-msg: #7C3AED;
+  --other-msg: #F1F5F9;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   --radius: 16px;
-  --radius-sm: 10px;
+  --radius-sm: 12px;
 }
 
 * {
@@ -29,91 +32,355 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg);
-  color: var(--black);
-  line-height: 1.5;
+  color: var(--text);
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 16px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app {
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   height: 85vh;
   min-height: 600px;
-  background: var(--white);
+  background: var(--surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
+}
+
+/* Auth Screen */
+.auth-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  z-index: 100;
+  transition: transform 0.4s ease;
+}
+
+.auth-screen.hidden {
+  transform: translateY(-100%);
+}
+
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+}
+
+.auth-title {
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.auth-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  margin-bottom: 32px;
+  font-size: 14px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 16px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.auth-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: white;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 16px;
+  background: white;
+  color: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.auth-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* Header */
 .header {
-  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: white;
-  padding: 14px 16px;
+  padding: 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  position: relative;
 }
 
-.avatar {
-  width: 36px;
-  height: 36px;
+.user-avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
   font-weight: 600;
   font-size: 16px;
-  backdrop-filter: blur(10px);
 }
 
-.header-info {
-  flex: 1;
-}
-
-.header-info h1 {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.header-info p {
-  font-size: 12px;
-  opacity: 0.9;
-}
-
-.auth-buttons {
+.user-status {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
 }
 
-.auth-btn {
-  background: rgba(255, 255, 255, 0.2);
+.user-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.user-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--online);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface-dark);
   border: none;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.auth-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+.icon-btn:hover {
+  background: var(--border);
 }
 
-/* Messages Container */
+/* Tabs */
+.tabs {
+  display: flex;
+  background: var(--surface-dark);
+  padding: 8px;
+  gap: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Users List */
+.users-container, .chats-container {
+  flex: 1;
+  overflow-y: auto;
+  display: none;
+}
+
+.container.active {
+  display: block;
+}
+
+.user-item, .chat-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid var(--border);
+}
+
+.user-item:hover, .chat-item:hover {
+  background: var(--surface-dark);
+}
+
+.user-avatar.small {
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-details h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.user-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.status-dot.small {
+  width: 6px;
+  height: 6px;
+}
+
+.typing-indicator {
+  color: var(--typing);
+  font-weight: 500;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.typing-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--typing);
+  animation: typing 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+/* Chat Container */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  display: none;
+}
+
+.chat-container.active {
+  display: flex;
+}
+
+.chat-header {
+  padding: 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-back {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-dark);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.chat-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;
@@ -125,30 +392,36 @@ body {
 }
 
 .message {
-  max-width: 85%;
-  padding: 12px;
-  border-radius: var(--radius-sm);
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 18px;
   position: relative;
-  animation: fadeIn 0.3s ease;
+  animation: messageAppear 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.message.received {
-  background: var(--white);
-  border: 1px solid var(--gray-light);
-  align-self: flex-start;
-  border-bottom-left-radius: 4px;
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.sent {
-  background: var(--primary);
-  color: white;
   align-self: flex-end;
+  background: var(--my-msg);
+  color: white;
   border-bottom-right-radius: 4px;
+}
+
+.message.received {
+  align-self: flex-start;
+  background: var(--other-msg);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
 }
 
 .message-sender {
@@ -158,352 +431,264 @@ body {
   color: var(--primary);
 }
 
-.message.sent .message-sender {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.message-text {
-  font-size: 14px;
-  word-break: break-word;
-}
-
 .message-time {
   font-size: 11px;
   opacity: 0.7;
   text-align: right;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
-/* Audio Message */
-.audio-message {
-  margin-top: 8px;
-}
-
-.audio-player {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 200px;
-}
-
-.message.received .audio-player {
-  background: var(--secondary);
-}
-
-.audio-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.play-btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.play-btn:hover {
-  transform: scale(1.1);
-}
-
-.audio-info {
-  flex: 1;
-}
-
-.audio-duration {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.audio-wave {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  height: 24px;
-}
-
-.wave-bar {
-  width: 3px;
-  background: currentColor;
-  border-radius: 2px;
-  opacity: 0.6;
-  animation: wave 1.2s ease-in-out infinite;
-}
-
-@keyframes wave {
-  0%, 100% { height: 8px; }
-  50% { height: 16px; }
-}
-
-.wave-bar:nth-child(2) { animation-delay: 0.2s; }
-.wave-bar:nth-child(3) { animation-delay: 0.4s; }
-.wave-bar:nth-child(4) { animation-delay: 0.6s; }
-.wave-bar:nth-child(5) { animation-delay: 0.8s; }
-
-/* Recording UI */
-.recording-ui {
+.typing-bubble {
+  align-self: flex-start;
+  background: var(--other-msg);
   padding: 12px 16px;
-  background: var(--white);
-  border-top: 1px solid var(--gray-light);
-  display: none;
-}
-
-.recording-box {
-  background: var(--secondary);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.recording-indicator {
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.recording-dot {
-  width: 12px;
-  height: 12px;
-  background: var(--danger);
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.recording-time {
-  font-family: 'SF Mono', monospace;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--black);
-}
-
-.recording-actions {
-  margin-left: auto;
-  display: flex;
-  gap: 8px;
-}
-
-.record-btn {
-  background: var(--danger);
-  color: white;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.record-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.cancel-btn {
-  background: var(--gray);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cancel-btn:hover {
-  background: var(--gray-dark);
 }
 
 /* Input Area */
 .input-area {
-  padding: 12px 16px;
-  background: var(--white);
-  border-top: 1px solid var(--gray-light);
+  padding: 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
 }
 
 .message-input {
   flex: 1;
-  padding: 10px 16px;
-  border: 1px solid var(--gray-light);
+  padding: 12px 16px;
+  border: 2px solid var(--border);
   border-radius: 24px;
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
   transition: border-color 0.2s;
-  background: var(--bg);
 }
 
 .message-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
 }
 
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
+.send-btn {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: none;
   background: var(--primary);
+  border: none;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.2s, background 0.2s;
 }
 
-.icon-btn:hover {
-  background: var(--primary-dark);
+.send-btn:hover {
+  background: var(--primary-light);
   transform: scale(1.05);
 }
 
-.icon-btn.recording {
-  background: var(--danger);
-  animation: pulse 2s infinite;
-}
-
-.icon-btn svg {
+.send-btn svg {
   width: 20px;
   height: 20px;
 }
 
-/* Status Indicator */
-.status-indicator {
-  font-size: 11px;
-  padding: 4px 8px;
-  background: var(--secondary);
-  border-radius: 12px;
+/* Online Users Count */
+.online-count {
+  padding: 12px 16px;
+  background: var(--surface-dark);
+  font-size: 14px;
+  color: var(--text-light);
   text-align: center;
-  margin: 8px auto;
-  color: var(--gray-dark);
-  max-width: fit-content;
+  border-bottom: 1px solid var(--border);
 }
 
 /* Scrollbar */
+.users-container::-webkit-scrollbar,
+.chats-container::-webkit-scrollbar,
 .messages-container::-webkit-scrollbar {
   width: 6px;
 }
 
+.users-container::-webkit-scrollbar-track,
+.chats-container::-webkit-scrollbar-track,
 .messages-container::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.users-container::-webkit-scrollbar-thumb,
+.chats-container::-webkit-scrollbar-thumb,
 .messages-container::-webkit-scrollbar-thumb {
-  background: var(--gray-light);
+  background: var(--border);
   border-radius: 3px;
 }
 
-.messages-container::-webkit-scrollbar-thumb:hover {
-  background: var(--gray);
-}
-
 /* Responsive */
-@media (max-height: 700px) {
+@media (max-width: 480px) {
   .app {
     height: 95vh;
     min-height: 500px;
+    max-width: 100%;
   }
   
-  .messages-container {
-    padding: 12px;
-  }
-  
-  .message {
-    padding: 10px;
+  .auth-screen {
+    padding: 24px;
   }
 }
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <!-- Header -->
-  <div class="header">
-    <div class="avatar">A</div>
-    <div class="header-info">
-      <h1>Astik Messenger</h1>
-      <p id="statusText">Подключение...</p>
-    </div>
-    <div class="auth-buttons">
-      <button id="btnSignIn" class="auth-btn">Войти</button>
-      <button id="btnSignOut" class="auth-btn" style="display:none">Выйти</button>
-    </div>
+  <!-- Auth Screen -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-logo">A</div>
+    <h1 class="auth-title">Astik Messenger</h1>
+    <p class="auth-subtitle">Общайтесь в общем чате и отправляйте личные сообщения</p>
+    <input type="text" class="auth-input" id="userNameInput" placeholder="Введите ваше имя" maxlength="20">
+    <button class="auth-btn" id="loginBtn">Начать общение</button>
   </div>
 
-  <!-- Messages -->
-  <div class="messages-container" id="messagesContainer">
-    <div class="status-indicator" id="connectionStatus">Подключение к чату...</div>
-  </div>
-
-  <!-- Recording UI -->
-  <div class="recording-ui" id="recordingUI">
-    <div class="recording-box">
-      <div class="recording-indicator">
-        <div class="recording-dot"></div>
-        <div class="recording-time" id="recordingTime">00:00</div>
+  <!-- Main App -->
+  <div class="main-app" id="mainApp" style="display: none;">
+    <!-- Header -->
+    <div class="header">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-status">
+          <div class="user-name" id="currentUserName">Пользователь</div>
+          <div class="user-status-indicator">
+            <div class="status-dot"></div>
+            <span id="statusText">Онлайн</span>
+          </div>
+        </div>
       </div>
-      <div class="recording-actions">
-        <button class="cancel-btn" id="btnCancelRec">Отмена</button>
-        <button class="record-btn" id="btnSendRec">
+      <div class="header-actions">
+        <button class="icon-btn" id="refreshBtn" title="Обновить">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="logoutBtn" title="Выйти">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
           </svg>
         </button>
       </div>
     </div>
-  </div>
 
-  <!-- Input Area -->
-  <div class="input-area">
-    <input type="text" class="message-input" id="inputMessage" placeholder="Введите сообщение..." autocomplete="off">
-    <div class="action-buttons">
-      <button class="icon-btn" id="btnRecord" title="Записать голосовое">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-        </svg>
-      </button>
-      <button class="icon-btn" id="btnSend" title="Отправить">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="users">Люди</button>
+      <button class="tab" data-tab="chats">Чаты</button>
+      <button class="tab" data-tab="general">Общий</button>
+    </div>
+
+    <!-- Online Users Count -->
+    <div class="online-count">
+      <span id="onlineCount">1</span> пользователей онлайн
+    </div>
+
+    <!-- Users List -->
+    <div class="users-container active" id="usersContainer">
+      <!-- Users will be loaded here -->
+    </div>
+
+    <!-- Chats List -->
+    <div class="chats-container" id="chatsContainer">
+      <!-- Chats will be loaded here -->
+    </div>
+
+    <!-- General Chat -->
+    <div class="chat-container" id="generalChat">
+      <div class="chat-header">
+        <div class="chat-back">
+          <button class="back-btn" data-back="tabs">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div class="chat-user-info">
+            <div class="user-avatar small" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6);">G</div>
+            <div>
+              <h3>Общий чат</h3>
+              <div class="user-meta">
+                <div class="status-dot small" style="background: var(--online);"></div>
+                <span id="generalChatStatus">Все участники</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="messages-container" id="generalMessages">
+        <!-- General chat messages -->
+      </div>
+      
+      <div class="input-area">
+        <input type="text" class="message-input" id="generalMessageInput" placeholder="Сообщение в общий чат...">
+        <button class="send-btn" id="sendGeneralBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Private Chat -->
+    <div class="chat-container" id="privateChat">
+      <div class="chat-header">
+        <div class="chat-back">
+          <button class="back-btn" data-back="chats">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div class="chat-user-info">
+            <div class="user-avatar small" id="chatUserAvatar">U</div>
+            <div>
+              <h3 id="chatUserName">Пользователь</h3>
+              <div class="user-meta">
+                <div class="status-dot small" id="chatUserStatus"></div>
+                <span id="chatUserStatusText">Онлайн</span>
+                <div class="typing-indicator" id="chatTypingIndicator" style="display: none;">
+                  <span>печатает</span>
+                  <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="messages-container" id="privateMessages">
+        <!-- Private chat messages -->
+      </div>
+      
+      <div class="input-area">
+        <input type="text" class="message-input" id="privateMessageInput" placeholder="Личное сообщение...">
+        <button class="send-btn" id="sendPrivateBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
-import { getStorage, ref as sref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+import { getDatabase, ref, set, push, onChildAdded, onChildChanged, onValue, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
@@ -516,396 +701,473 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getDatabase(app);
-const storage = getStorage(app);
 
 // DOM Elements
-const messagesContainer = document.getElementById('messagesContainer');
-const inputMessage = document.getElementById('inputMessage');
-const btnSend = document.getElementById('btnSend');
-const btnRecord = document.getElementById('btnRecord');
-const btnSignIn = document.getElementById('btnSignIn');
-const btnSignOut = document.getElementById('btnSignOut');
-const recordingUI = document.getElementById('recordingUI');
-const recordingTime = document.getElementById('recordingTime');
-const btnCancelRec = document.getElementById('btnCancelRec');
-const btnSendRec = document.getElementById('btnSendRec');
+const authScreen = document.getElementById('authScreen');
+const mainApp = document.getElementById('mainApp');
+const userNameInput = document.getElementById('userNameInput');
+const loginBtn = document.getElementById('loginBtn');
+const currentUserName = document.getElementById('currentUserName');
+const userAvatar = document.getElementById('userAvatar');
 const statusText = document.getElementById('statusText');
-const connectionStatus = document.getElementById('connectionStatus');
+const logoutBtn = document.getElementById('logoutBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const onlineCount = document.getElementById('onlineCount');
 
-// State
-let currentUser = null;
-let localDeviceId = "dev_" + Math.random().toString(36).slice(2, 9);
-let mediaRecorder = null;
-let recordedChunks = [];
-let recStartTs = 0;
-let recTimer = null;
-let audioStream = null;
-let activeAudios = new Map();
+// Tabs
+const tabs = document.querySelectorAll('.tab');
+const containers = {
+  users: document.getElementById('usersContainer'),
+  chats: document.getElementById('chatsContainer'),
+  general: document.getElementById('generalChat')
+};
 
-// Auth
-btnSignIn.addEventListener('click', async () => {
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    connectionStatus.textContent = "Вход выполнен успешно";
-  } catch (error) {
-    console.error('Auth error:', error);
-    connectionStatus.textContent = "Ошибка входа";
-  }
-});
+// Chat elements
+const generalChat = document.getElementById('generalChat');
+const privateChat = document.getElementById('privateChat');
+const generalMessages = document.getElementById('generalMessages');
+const privateMessages = document.getElementById('privateMessages');
+const generalMessageInput = document.getElementById('generalMessageInput');
+const privateMessageInput = document.getElementById('privateMessageInput');
+const sendGeneralBtn = document.getElementById('sendGeneralBtn');
+const sendPrivateBtn = document.getElementById('sendPrivateBtn');
 
-btnSignOut.addEventListener('click', () => {
-  signOut(auth);
-  connectionStatus.textContent = "Вы вышли из аккаунта";
-});
+// User state
+let currentUser = {
+  id: null,
+  name: null,
+  isOnline: false,
+  lastSeen: null
+};
 
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  btnSignIn.style.display = user ? 'none' : 'block';
-  btnSignOut.style.display = user ? 'block' : 'none';
-  statusText.textContent = user ? `Вы: ${user.displayName}` : 'Гостевой режим';
-  
-  if (user) {
-    connectionStatus.textContent = `Добро пожаловать, ${user.displayName}!`;
-    setTimeout(() => {
-      connectionStatus.style.display = 'none';
-    }, 2000);
-  }
-});
+let onlineUsers = {};
+let typingUsers = {};
+let currentChatWith = null;
+let userTypingTimeout = null;
 
-// Messages
-function formatTime(timestamp) {
-  const date = new Date(timestamp);
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+// Generate user ID
+function generateUserId() {
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-function createMessageElement(msg) {
-  const isSent = msg.senderId === (currentUser ? currentUser.uid : localDeviceId);
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
-  
-  const senderName = msg.name || (isSent ? 'Вы' : 'Гость');
-  
-  messageDiv.innerHTML = `
-    ${!isSent ? `<div class="message-sender">${senderName}</div>` : ''}
-    <div class="message-text">${msg.type === 'audio' ? '🎤 Голосовое сообщение' : escapeHtml(msg.text)}</div>
-    ${msg.type === 'audio' && msg.audioUrl ? `
-      <div class="audio-message">
-        <div class="audio-player">
-          <div class="audio-controls">
-            <button class="play-btn" data-audio="${msg.audioUrl}">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-            </button>
-          </div>
-          <div class="audio-info">
-            <div class="audio-wave">
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-              <div class="wave-bar"></div>
-            </div>
-            <div class="audio-duration" data-audio="${msg.audioUrl}">...</div>
-          </div>
-        </div>
-      </div>
-    ` : ''}
-    <div class="message-time">${formatTime(msg.time)}</div>
-  `;
-  
-  return messageDiv;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Listen for new messages
-const messagesRef = ref(db, 'messages');
-onChildAdded(messagesRef, (snapshot) => {
-  const msg = snapshot.val();
-  const messageElement = createMessageElement(msg);
-  messagesContainer.appendChild(messageElement);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  
-  // Load audio duration for audio messages
-  if (msg.type === 'audio' && msg.audioUrl) {
-    loadAudioDuration(msg.audioUrl);
-  }
-  
-  // Add click handler for play buttons
-  setTimeout(() => {
-    const playBtn = messageElement.querySelector(`[data-audio="${msg.audioUrl}"]`);
-    if (playBtn) {
-      playBtn.addEventListener('click', () => toggleAudioPlayback(msg.audioUrl));
-    }
-  }, 100);
-});
-
-// Audio playback
-async function toggleAudioPlayback(audioUrl) {
-  const audioElement = activeAudios.get(audioUrl);
-  
-  if (audioElement && !audioElement.paused) {
-    audioElement.pause();
+// Login
+loginBtn.addEventListener('click', () => {
+  const userName = userNameInput.value.trim();
+  if (!userName) {
+    alert('Пожалуйста, введите ваше имя');
     return;
   }
-  
-  // Stop all other audios
-  activeAudios.forEach((audio, url) => {
-    if (url !== audioUrl) {
-      audio.pause();
-      audio.currentTime = 0;
+
+  currentUser.id = generateUserId();
+  currentUser.name = userName;
+  currentUser.isOnline = true;
+  currentUser.lastSeen = Date.now();
+
+  // Set avatar initial
+  userAvatar.textContent = userName.charAt(0).toUpperCase();
+  currentUserName.textContent = userName;
+
+  // Save user to database
+  const userRef = ref(db, `users/${currentUser.id}`);
+  set(userRef, {
+    name: userName,
+    isOnline: true,
+    lastSeen: Date.now(),
+    lastActivity: Date.now()
+  });
+
+  // Switch to main app
+  authScreen.classList.add('hidden');
+  setTimeout(() => {
+    authScreen.style.display = 'none';
+    mainApp.style.display = 'block';
+  }, 400);
+
+  // Load users and messages
+  loadOnlineUsers();
+  loadGeneralMessages();
+  setupTypingListeners();
+});
+
+// Logout
+logoutBtn.addEventListener('click', () => {
+  if (currentUser.id) {
+    const userRef = ref(db, `users/${currentUser.id}`);
+    set(userRef, {
+      name: currentUser.name,
+      isOnline: false,
+      lastSeen: Date.now(),
+      lastActivity: Date.now()
+    });
+  }
+
+  currentUser = { id: null, name: null, isOnline: false };
+  mainApp.style.display = 'none';
+  authScreen.style.display = 'flex';
+  setTimeout(() => {
+    authScreen.classList.remove('hidden');
+  }, 50);
+  userNameInput.value = '';
+});
+
+// Refresh
+refreshBtn.addEventListener('click', () => {
+  loadOnlineUsers();
+  loadGeneralMessages();
+  if (currentChatWith) {
+    loadPrivateMessages(currentChatWith);
+  }
+});
+
+// Tab switching
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const tabName = tab.dataset.tab;
+    
+    // Update tabs
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    
+    // Hide all containers
+    Object.values(containers).forEach(container => {
+      container.classList.remove('active');
+    });
+    
+    // Show selected container
+    containers[tabName].classList.add('active');
+    
+    // Hide chat containers
+    generalChat.classList.remove('active');
+    privateChat.classList.remove('active');
+  });
+});
+
+// Back buttons
+document.querySelectorAll('.back-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const backTo = btn.dataset.back;
+    
+    if (backTo === 'tabs') {
+      generalChat.classList.remove('active');
+      containers.general.classList.add('active');
+    } else if (backTo === 'chats') {
+      privateChat.classList.remove('active');
+      containers.chats.classList.add('active');
+      currentChatWith = null;
     }
   });
+});
+
+// Load online users
+function loadOnlineUsers() {
+  const usersRef = ref(db, 'users');
+  const usersContainer = document.getElementById('usersContainer');
   
-  const audio = new Audio(audioUrl);
-  activeAudios.set(audioUrl, audio);
-  
-  audio.addEventListener('loadedmetadata', () => {
-    const durationElements = document.querySelectorAll(`[data-audio="${audioUrl}"]`);
-    durationElements.forEach(el => {
-      if (el.className === 'audio-duration') {
-        el.textContent = formatDuration(audio.duration);
+  onValue(usersRef, (snapshot) => {
+    const users = snapshot.val();
+    onlineUsers = users || {};
+    
+    // Update online count
+    const onlineCountValue = Object.values(onlineUsers).filter(user => user.isOnline).length;
+    onlineCount.textContent = onlineCountValue;
+    
+    // Clear container
+    usersContainer.innerHTML = '';
+    
+    // Add current user first
+    if (currentUser.id && onlineUsers[currentUser.id]) {
+      addUserToList(currentUser.id, onlineUsers[currentUser.id], usersContainer, true);
+    }
+    
+    // Add other users
+    Object.entries(onlineUsers).forEach(([userId, userData]) => {
+      if (userId !== currentUser.id) {
+        addUserToList(userId, userData, usersContainer, false);
       }
     });
   });
+}
+
+function addUserToList(userId, userData, container, isCurrentUser) {
+  const userItem = document.createElement('div');
+  userItem.className = 'user-item';
+  userItem.dataset.userId = userId;
   
-  audio.addEventListener('ended', () => {
-    activeAudios.delete(audioUrl);
+  const avatarLetter = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
+  const statusColor = userData.isOnline ? 'var(--online)' : 'var(--offline)';
+  const statusText = userData.isOnline ? 'Онлайн' : 'Оффлайн';
+  
+  userItem.innerHTML = `
+    <div class="user-avatar small" style="background: ${isCurrentUser ? 'linear-gradient(135deg, var(--primary), var(--primary-light))' : 'linear-gradient(135deg, #10B981, #34D399)'};">${avatarLetter}</div>
+    <div class="user-details">
+      <h3>${userData.name} ${isCurrentUser ? '(Вы)' : ''}</h3>
+      <div class="user-meta">
+        <div class="status-dot small" style="background: ${statusColor};"></div>
+        <span>${statusText}</span>
+        ${typingUsers[userId] ? `
+          <div class="typing-indicator">
+            <span>печатает</span>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+  
+  if (!isCurrentUser) {
+    userItem.addEventListener('click', () => {
+      startPrivateChat(userId, userData.name);
+    });
+  }
+  
+  container.appendChild(userItem);
+}
+
+// Start private chat
+function startPrivateChat(userId, userName) {
+  currentChatWith = userId;
+  
+  // Update chat header
+  document.getElementById('chatUserName').textContent = userName;
+  document.getElementById('chatUserAvatar').textContent = userName.charAt(0).toUpperCase();
+  
+  // Check online status
+  const userData = onlineUsers[userId];
+  const statusColor = userData && userData.isOnline ? 'var(--online)' : 'var(--offline)';
+  const statusText = userData && userData.isOnline ? 'Онлайн' : 'Оффлайн';
+  
+  document.getElementById('chatUserStatus').style.background = statusColor;
+  document.getElementById('chatUserStatusText').textContent = statusText;
+  
+  // Load messages
+  loadPrivateMessages(userId);
+  
+  // Switch to private chat
+  containers.chats.classList.remove('active');
+  privateChat.classList.add('active');
+}
+
+// Load general messages
+function loadGeneralMessages() {
+  const messagesRef = ref(db, 'messages/general');
+  generalMessages.innerHTML = '';
+  
+  onChildAdded(messagesRef, (snapshot) => {
+    const message = snapshot.val();
+    if (message) {
+      addMessageToContainer(message, generalMessages, 'general');
+    }
   });
+}
+
+// Load private messages
+function loadPrivateMessages(userId) {
+  const chatId = [currentUser.id, userId].sort().join('_');
+  const messagesRef = ref(db, `messages/private/${chatId}`);
+  privateMessages.innerHTML = '';
   
-  try {
-    await audio.play();
-  } catch (error) {
-    console.error('Audio playback error:', error);
-  }
+  onChildAdded(messagesRef, (snapshot) => {
+    const message = snapshot.val();
+    if (message) {
+      addMessageToContainer(message, privateMessages, 'private');
+    }
+  });
 }
 
-function formatDuration(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
-async function loadAudioDuration(audioUrl) {
-  try {
-    const audio = new Audio(audioUrl);
-    audio.addEventListener('loadedmetadata', () => {
-      const durationElements = document.querySelectorAll(`[data-audio="${audioUrl}"]`);
-      durationElements.forEach(el => {
-        if (el.className === 'audio-duration') {
-          el.textContent = formatDuration(audio.duration);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Error loading audio duration:', error);
-  }
-}
-
-// Send text message
-btnSend.addEventListener('click', sendTextMessage);
-inputMessage.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendTextMessage();
-});
-
-async function sendTextMessage() {
-  const text = inputMessage.value.trim();
-  if (!text) return;
+// Add message to container
+function addMessageToContainer(message, container, type) {
+  const messageDiv = document.createElement('div');
+  const isSent = message.senderId === currentUser.id;
   
-  try {
-    await push(messagesRef, {
-      senderId: currentUser ? currentUser.uid : localDeviceId,
-      name: currentUser ? currentUser.displayName : 'Гость',
-      type: 'text',
-      text: text,
-      time: Date.now()
-    });
-    
-    inputMessage.value = '';
-    inputMessage.focus();
-  } catch (error) {
-    console.error('Error sending message:', error);
-    connectionStatus.textContent = "Ошибка отправки сообщения";
-    connectionStatus.style.display = 'block';
-  }
-}
-
-// Voice recording
-btnRecord.addEventListener('click', () => {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    stopRecording();
+  messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+  
+  const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  
+  if (!isSent && type === 'general') {
+    const senderName = onlineUsers[message.senderId]?.name || 'Аноним';
+    messageDiv.innerHTML = `
+      <div class="message-sender">${senderName}</div>
+      <div>${message.text}</div>
+      <div class="message-time">${time}</div>
+    `;
   } else {
-    startRecording();
+    messageDiv.innerHTML = `
+      <div>${message.text}</div>
+      <div class="message-time">${time}</div>
+    `;
   }
+  
+  container.appendChild(messageDiv);
+  container.scrollTop = container.scrollHeight;
+}
+
+// Send general message
+sendGeneralBtn.addEventListener('click', sendGeneralMessage);
+generalMessageInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendGeneralMessage();
 });
 
-async function startRecording() {
-  try {
-    if (audioStream) {
-      audioStream.getTracks().forEach(track => track.stop());
+function sendGeneralMessage() {
+  const text = generalMessageInput.value.trim();
+  if (!text || !currentUser.id) return;
+  
+  const messagesRef = ref(db, 'messages/general');
+  push(messagesRef, {
+    senderId: currentUser.id,
+    text: text,
+    timestamp: Date.now()
+  });
+  
+  generalMessageInput.value = '';
+  updateUserActivity();
+}
+
+// Send private message
+sendPrivateBtn.addEventListener('click', sendPrivateMessage);
+privateMessageInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendPrivateMessage();
+});
+
+function sendPrivateMessage() {
+  const text = privateMessageInput.value.trim();
+  if (!text || !currentUser.id || !currentChatWith) return;
+  
+  const chatId = [currentUser.id, currentChatWith].sort().join('_');
+  const messagesRef = ref(db, `messages/private/${chatId}`);
+  
+  push(messagesRef, {
+    senderId: currentUser.id,
+    text: text,
+    timestamp: Date.now()
+  });
+  
+  privateMessageInput.value = '';
+  updateUserActivity();
+  stopTyping();
+}
+
+// Typing indicators
+function setupTypingListeners() {
+  // Listen for typing in private chat
+  privateMessageInput.addEventListener('input', () => {
+    if (privateMessageInput.value.trim() && currentChatWith) {
+      startTyping();
+    } else {
+      stopTyping();
     }
-    
-    audioStream = await navigator.mediaDevices.getUserMedia({ 
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        sampleRate: 44100
-      }
-    });
-    
-    mediaRecorder = new MediaRecorder(audioStream, {
-      mimeType: 'audio/webm;codecs=opus'
-    });
-    
-    recordedChunks = [];
-    
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunks.push(event.data);
-      }
-    };
-    
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
-      await uploadAudioMessage(audioBlob);
-      
-      if (audioStream) {
-        audioStream.getTracks().forEach(track => track.stop());
-        audioStream = null;
-      }
-    };
-    
-    mediaRecorder.start(100); // Collect data every 100ms
-    recStartTs = Date.now();
-    startRecordingTimer();
+  });
+  
+  // Listen for other users typing
+  const typingRef = ref(db, 'typing');
+  onChildChanged(typingRef, (snapshot) => {
+    const typingData = snapshot.val();
+    typingUsers = typingData || {};
     
     // Update UI
-    recordingUI.style.display = 'block';
-    btnRecord.classList.add('recording');
-    btnRecord.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-      </svg>
-    `;
-    
-  } catch (error) {
-    console.error('Recording error:', error);
-    connectionStatus.textContent = "Не удалось получить доступ к микрофону";
-    connectionStatus.style.display = 'block';
-    setTimeout(() => {
-      connectionStatus.style.display = 'none';
-    }, 3000);
-  }
+    updateTypingIndicators();
+  });
 }
 
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    stopRecordingTimer();
-    
-    // Update UI
-    recordingUI.style.display = 'none';
-    btnRecord.classList.remove('recording');
-    btnRecord.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-      </svg>
-    `;
-  }
+function startTyping() {
+  if (!currentUser.id || !currentChatWith) return;
+  
+  const typingRef = ref(db, `typing/${currentUser.id}`);
+  set(typingRef, {
+    typingTo: currentChatWith,
+    timestamp: Date.now()
+  });
+  
+  clearTimeout(userTypingTimeout);
+  userTypingTimeout = setTimeout(stopTyping, 3000);
 }
 
-function startRecordingTimer() {
-  recTimer = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - recStartTs) / 1000);
-    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-    const seconds = (elapsed % 60).toString().padStart(2, '0');
-    recordingTime.textContent = `${minutes}:${seconds}`;
-    
-    // Auto-stop after 2 minutes
-    if (elapsed >= 120) {
-      stopRecording();
+function stopTyping() {
+  if (!currentUser.id) return;
+  
+  const typingRef = ref(db, `typing/${currentUser.id}`);
+  remove(typingRef);
+}
+
+function updateTypingIndicators() {
+  // Check if current chat partner is typing
+  if (currentChatWith && typingUsers[currentChatWith]) {
+    const typingTo = typingUsers[currentChatWith].typingTo;
+    if (typingTo === currentUser.id) {
+      document.getElementById('chatTypingIndicator').style.display = 'flex';
+      document.getElementById('chatUserStatusText').style.display = 'none';
+    } else {
+      document.getElementById('chatTypingIndicator').style.display = 'none';
+      document.getElementById('chatUserStatusText').style.display = 'inline';
     }
-  }, 1000);
-}
-
-function stopRecordingTimer() {
-  if (recTimer) {
-    clearInterval(recTimer);
-    recTimer = null;
+  } else {
+    document.getElementById('chatTypingIndicator').style.display = 'none';
+    document.getElementById('chatUserStatusText').style.display = 'inline';
   }
+  
+  // Update users list
+  const userItems = document.querySelectorAll('.user-item');
+  userItems.forEach(item => {
+    const userId = item.dataset.userId;
+    if (typingUsers[userId]) {
+      // Show typing indicator in users list
+      const typingIndicator = item.querySelector('.typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.style.display = 'flex';
+      }
+    }
+  });
 }
 
-btnCancelRec.addEventListener('click', () => {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    recordedChunks = [];
-    stopRecordingTimer();
-    recordingUI.style.display = 'none';
-    btnRecord.classList.remove('recording');
-    btnRecord.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-      </svg>
-    `;
-    
-    if (audioStream) {
-      audioStream.getTracks().forEach(track => track.stop());
-      audioStream = null;
-    }
+// Update user activity
+function updateUserActivity() {
+  if (!currentUser.id) return;
+  
+  const userRef = ref(db, `users/${currentUser.id}`);
+  set(userRef, {
+    name: currentUser.name,
+    isOnline: true,
+    lastSeen: Date.now(),
+    lastActivity: Date.now()
+  });
+}
+
+// Keep user online
+setInterval(() => {
+  if (currentUser.id && currentUser.isOnline) {
+    updateUserActivity();
+  }
+}, 30000);
+
+// Switch to general chat
+const generalTab = document.querySelector('[data-tab="general"]');
+generalTab.addEventListener('click', () => {
+  // If clicking general tab while already active, open chat
+  if (generalTab.classList.contains('active') && !generalChat.classList.contains('active')) {
+    containers.general.classList.remove('active');
+    generalChat.classList.add('active');
   }
 });
-
-btnSendRec.addEventListener('click', () => {
-  stopRecording();
-});
-
-async function uploadAudioMessage(audioBlob) {
-  try {
-    const userId = currentUser ? currentUser.uid : localDeviceId;
-    const timestamp = Date.now();
-    const storagePath = `audio/${userId}/${timestamp}.webm`;
-    const storageRef = sref(storage, storagePath);
-    
-    await uploadBytes(storageRef, audioBlob);
-    const audioUrl = await getDownloadURL(storageRef);
-    
-    await push(messagesRef, {
-      senderId: userId,
-      name: currentUser ? currentUser.displayName : 'Гость',
-      type: 'audio',
-      audioUrl: audioUrl,
-      time: timestamp,
-      duration: Math.floor((Date.now() - recStartTs) / 1000)
-    });
-    
-  } catch (error) {
-    console.error('Error uploading audio:', error);
-    connectionStatus.textContent = "Ошибка отправки голосового сообщения";
-    connectionStatus.style.display = 'block';
-    setTimeout(() => {
-      connectionStatus.style.display = 'none';
-    }, 3000);
-  }
-}
 
 // Initialize
-connectionStatus.textContent = "Чат готов к использованию";
-setTimeout(() => {
-  connectionStatus.style.display = 'none';
-}, 2000);
+window.addEventListener('beforeunload', () => {
+  if (currentUser.id) {
+    const userRef = ref(db, `users/${currentUser.id}`);
+    set(userRef, {
+      name: currentUser.name,
+      isOnline: false,
+      lastSeen: Date.now(),
+      lastActivity: Date.now()
+    });
+  }
+});
 
-// Focus input on load
-inputMessage.focus();
+// Auto-focus name input
+userNameInput.focus();
 </script>
 </body>
 </html>
