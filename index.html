@@ -103,6 +103,7 @@ const btnSendRec = document.getElementById("btnSendRec");
 let currentUser = null;
 let localDeviceId = "dev_"+Math.random().toString(36).slice(2,9);
 let mediaRecorder=null, recordedChunks=[], recStartTs=0, recTimer=null;
+let audioStream = null; // Добавлено: для хранения потока
 
 /* Auth */
 btnSignIn.addEventListener("click", async()=>{
@@ -127,7 +128,14 @@ function renderMessage(msg){
   const bubble=document.createElement("div"); bubble.className="msg"+(isMe?" me":"");
   if(!isMe){ const nick=document.createElement("div"); nick.className="nick"; nick.textContent=msg.name||"User"; bubble.appendChild(nick);}
   if(msg.type==="text"||!msg.type){ const p=document.createElement("div"); p.textContent=msg.text; bubble.appendChild(p);}
-  else if(msg.type==="audio"&&msg.audioUrl){ const audio=document.createElement("audio"); audio.controls=true; audio.src=msg.audioUrl; audio.className="audio-msg"; bubble.appendChild(audio);}
+  else if(msg.type==="audio"&&msg.audioUrl){ 
+    const audio=document.createElement("audio"); 
+    audio.controls=true; 
+    audio.src=msg.audioUrl; 
+    audio.className="audio-msg"; 
+    audio.preload="metadata";
+    bubble.appendChild(audio);
+  }
   const t=document.createElement("div"); t.className="time"; t.textContent=fmtTime(msg.time); bubble.appendChild(t);
   row.appendChild(bubble); messagesEl.appendChild(row);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -150,32 +158,103 @@ async function sendText(){
 
 /* Voice Messages */
 btnRecord.addEventListener("click", async()=>{
-  if(!mediaRecorder || mediaRecorder.state==="inactive") startRecording();
-  else stopRecording();
+  if(!mediaRecorder || mediaRecorder.state==="inactive") {
+    await startRecording();
+  } else {
+    stopRecording();
+  }
 });
 
 async function startRecording(){
   try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder = new MediaRecorder(stream); recordedChunks=[];
-    mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedChunks.push(e.data);}
-    mediaRecorder.onstop=async()=>{
-      const blob=new Blob(recordedChunks,{type:'audio/webm'});
-      showRecorderUI(false);
-      await uploadAudio(blob);
-      stream.getTracks().forEach(t=>t.stop());
+    // Останавливаем предыдущий поток, если есть
+    if(audioStream){
+      audioStream.getTracks().forEach(track => track.stop());
+    }
+    
+    audioStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder = new MediaRecorder(audioStream); 
+    recordedChunks=[];
+    
+    mediaRecorder.ondataavailable = e=>{ 
+      if(e.data.size>0) recordedChunks.push(e.data);
     };
-    mediaRecorder.start(); recStartTs=Date.now(); startRecTimer();
-    showRecorderUI(true); btnRecord.textContent="⏹️";
-  }catch(e){alert("Нет доступа к микрофону: "+e.message);}
+    
+    mediaRecorder.onstop=async()=>{
+      const blob=new Blob(recordedChunks,{type:'audio/webm;codecs=opus'});
+      await uploadAudio(blob);
+      
+      // Останавливаем треки только после загрузки
+      if(audioStream){
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+      }
+    };
+    
+    mediaRecorder.start(); 
+    recStartTs=Date.now(); 
+    startRecTimer();
+    showRecorderUI(true); 
+    btnRecord.textContent="⏹️";
+    btnRecord.style.color = "#d9534f";
+    
+  }catch(e){
+    console.error("Ошибка записи:", e);
+    alert("Нет доступа к микрофону: "+e.message);
+  }
 }
 
-function stopRecording(){ if(mediaRecorder && mediaRecorder.state==="recording"){ mediaRecorder.stop(); stopRecTimer(); btnRecord.textContent="🎤";} }
-function showRecorderUI(on){ recorderUI.style.display=on?"block":"none"; recTimeEl.textContent="00:00";}
-function startRecTimer(){ recTimer=setInterval(()=>{const diff=Math.floor((Date.now()-recStartTs)/1000); const mm=String(Math.floor(diff/60)).padStart(2,'0'); const ss=String(diff%60).padStart(2,'0'); recTimeEl.textContent=`${mm}:${ss}`;},250);}
-function stopRecTimer(){clearInterval(recTimer); recTimer=null;}
-btnCancelRec.addEventListener("click",()=>{ if(mediaRecorder && mediaRecorder.state==="recording"){ mediaRecorder.stop(); recordedChunks=[]; showRecorderUI(false); btnRecord.textContent="🎤"; stopRecTimer(); }});
-btnSendRec.addEventListener("click",()=>{ stopRecording(); });
+function stopRecording(){ 
+  if(mediaRecorder && mediaRecorder.state==="recording"){
+    mediaRecorder.stop(); 
+    stopRecTimer(); 
+    showRecorderUI(false);
+    btnRecord.textContent="🎤";
+    btnRecord.style.color = "";
+  } 
+}
+
+function showRecorderUI(on){ 
+  recorderUI.style.display=on?"block":"none"; 
+  recTimeEl.textContent="00:00";
+}
+
+function startRecTimer(){ 
+  recTimer=setInterval(()=>{
+    const diff=Math.floor((Date.now()-recStartTs)/1000); 
+    const mm=String(Math.floor(diff/60)).padStart(2,'0'); 
+    const ss=String(diff%60).padStart(2,'0'); 
+    recTimeEl.textContent=`${mm}:${ss}`;
+  },250);
+}
+
+function stopRecTimer(){
+  if(recTimer){
+    clearInterval(recTimer); 
+    recTimer=null;
+  }
+}
+
+btnCancelRec.addEventListener("click",()=>{ 
+  if(mediaRecorder && mediaRecorder.state==="recording"){ 
+    mediaRecorder.stop(); 
+    recordedChunks=[]; 
+    showRecorderUI(false); 
+    btnRecord.textContent="🎤";
+    btnRecord.style.color = "";
+    stopRecTimer(); 
+    
+    // Останавливаем поток
+    if(audioStream){
+      audioStream.getTracks().forEach(track => track.stop());
+      audioStream = null;
+    }
+  } 
+});
+
+btnSendRec.addEventListener("click",()=>{ 
+  stopRecording(); 
+});
 
 async function uploadAudio(blob){
   try{
@@ -185,13 +264,16 @@ async function uploadAudio(blob){
     await uploadBytes(storageRef,blob);
     const url=await getDownloadURL(storageRef);
     await push(msgsRef,{
-      senderId:userId,
+      senderId:currentUser?currentUser.uid:localDeviceId,
       name:currentUser?currentUser.displayName:"Guest",
       type:"audio",
       audioUrl:url,
       time:Date.now()
     });
-  }catch(e){alert("Ошибка отправки аудио: "+e.message);}
+  }catch(e){
+    console.error("Ошибка отправки аудио:", e);
+    alert("Ошибка отправки аудио: "+e.message);
+  }
 }
 </script>
 </body>
