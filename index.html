@@ -1,11 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<title>Firebase Чат</title>
+<style>
+    body { font-family: Arial; background: #eef1f5; padding: 20px; }
+    #chat { max-width: 550px; margin: auto; }
+    .msg { background: white; padding: 10px 15px; margin: 10px 0; border-radius: 10px; position: relative; }
+    .me { background: #d4f8d4; }
+    .nick { font-weight: bold; }
+    .time { font-size: 12px; color: gray; float: right; margin-left: 10px; }
+    .status { font-size: 12px; color: #4CAF50; margin-top: 5px; }
+    #name, #message { width: 100%; padding: 10px; margin: 5px 0; }
+    button { width: 100%; padding: 10px; background: #4CAF50; border: none; color: white; cursor: pointer; }
+    button:hover { background: #45a049; }
+</style>
 </head>
 <body>
-    1
+
+<div id="chat">
+    <h2>🔥 Усложнённый Firebase Чат</h2>
+
+    <input id="name" type="text" placeholder="Ваше имя">
+    <textarea id="message" placeholder="Сообщение"></textarea>
+    <button onclick="sendMessage()">Отправить</button>
+
+    <h3>Сообщения:</h3>
+    <div id="messages"></div>
+</div>
+
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
+        authDomain: "test3-88cee.firebaseapp.com",
+        databaseURL: "https://test3-88cee-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "test3-88cee",
+        storageBucket: "test3-88cee.firebasestorage.app",
+        messagingSenderId: "469479851370",
+        appId: "1:469479851370:web:915e95767b012c281e1113"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const messagesRef = ref(db, "messages");
+
+    // Генерируем локальный ID устройства
+    const deviceId = "dev_" + Math.random().toString(36).substr(2, 9);
+
+    // Отправка сообщения
+    window.sendMessage = function () {
+        const name = document.getElementById("name").value.trim();
+        const message = document.getElementById("message").value.trim();
+
+        if (!name || !message) return alert("Заполните имя и сообщение!");
+
+        const msgData = {
+            name: name,
+            text: message,
+            time: Date.now(),
+            from: deviceId,
+            status: "sent" // отправлено
+        };
+
+        // Добавляем в Firebase
+        push(messagesRef, msgData);
+
+        document.getElementById("message").value = "";
+    };
+
+    // Получение сообщений
+    const messagesDiv = document.getElementById("messages");
+
+    onChildAdded(messagesRef, snapshot => {
+        const msg = snapshot.val();
+
+        const isMe = msg.from === deviceId;
+
+        let div = document.createElement("div");
+        div.className = "msg" + (isMe ? " me" : "");
+
+        // время формируем нормально
+        let date = new Date(msg.time);
+        let hh = date.getHours().toString().padStart(2, "0");
+        let mm = date.getMinutes().toString().padStart(2, "0");
+
+        let status = "";
+        if (isMe) status = `<div class="status">✓✓ доставлено</div>`;
+
+        div.innerHTML = `
+            <div class="nick">${msg.name}</div>
+            ${msg.text}
+            <span class="time">${hh}:${mm}</span>
+            ${status}
+        `;
+
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+
+</script>
+
 </body>
 </html>
