@@ -16,7 +16,8 @@
   --text-light: #94A3B8;
   --border: #475569;
   --online: #10B981;
-  --typing: #F59E0B;
+  --away: #F59E0B;
+  --offline: #94A3B8;
   --my-msg: #7C3AED;
   --other-msg: #334155;
   --danger: #EF4444;
@@ -74,6 +75,7 @@ body {
   background: var(--surface);
   padding: 6px 12px;
   border-radius: 20px;
+  cursor: pointer;
 }
 
 .user-avatar {
@@ -91,7 +93,7 @@ body {
 /* Tabs */
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   background: var(--surface-light);
   padding: 4px;
   gap: 4px;
@@ -139,28 +141,35 @@ body {
   50% { opacity: 0.5; }
 }
 
-/* Lists */
-.list-container {
+.status-dot.away {
+  background: var(--away);
+}
+
+.status-dot.offline {
+  background: var(--offline);
+  animation: none;
+}
+
+/* Online Users List */
+.online-list {
   flex: 1;
   overflow-y: auto;
   display: none;
 }
 
-.list-container.active {
+.online-list.active {
   display: block;
 }
 
-.list-item {
+.user-item {
   display: flex;
   align-items: center;
   padding: 16px;
   gap: 12px;
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: background 0.2s;
 }
 
-.list-item:hover {
+.user-item:hover {
   background: var(--surface-light);
 }
 
@@ -180,41 +189,12 @@ body {
   margin-bottom: 4px;
 }
 
-.user-details {
+.user-status {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
   color: var(--text-light);
-}
-
-.typing-indicator {
-  color: var(--typing);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.typing-dots {
-  display: flex;
-  gap: 2px;
-}
-
-.typing-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--typing);
-  animation: typing 1.4s infinite;
-}
-
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typing {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-4px); }
 }
 
 /* Chat Container */
@@ -355,20 +335,18 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
 }
 
 .send-btn:active {
   transform: scale(0.95);
 }
 
-/* Empty States */
-.empty-state {
-  text-align: center;
-  padding: 48px 24px;
-  color: var(--text-light);
-}
-
-/* Settings */
+/* Settings Panel */
 .settings-panel {
   position: fixed;
   top: 0;
@@ -454,6 +432,46 @@ body {
 .overlay.active {
   display: block;
 }
+
+/* Status Colors */
+.status-online {
+  color: var(--online);
+}
+
+.status-away {
+  color: var(--away);
+}
+
+.status-offline {
+  color: var(--offline);
+}
+
+/* Scrollbar */
+.online-list::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.online-list::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.online-list::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+@media (max-height: 700px) {
+  .user-item {
+    padding: 12px 16px;
+  }
+  
+  .message {
+    padding: 10px 14px;
+  }
+}
 </style>
 </head>
 <body>
@@ -470,27 +488,18 @@ body {
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" data-tab="online">Онлайн</button>
-    <button class="tab" data-tab="chats">Чаты</button>
-    <button class="tab" data-tab="general">Общий</button>
+    <button class="tab" data-tab="general">Общий чат</button>
   </div>
 
   <!-- Online Status -->
   <div class="online-status">
-    <div class="status-dot"></div>
+    <div class="status-dot" id="statusDot"></div>
     <span id="onlineCount">Загрузка...</span>
   </div>
 
   <!-- Online Users -->
-  <div class="list-container active" id="onlineContainer">
+  <div class="online-list active" id="onlineContainer">
     <!-- Users will appear here -->
-  </div>
-
-  <!-- Chats -->
-  <div class="list-container" id="chatsContainer">
-    <div class="empty-state">
-      <p>У вас пока нет личных чатов</p>
-      <p style="font-size: 13px; margin-top: 8px;">Начните общение с пользователя из списка "Онлайн"</p>
-    </div>
   </div>
 
   <!-- General Chat -->
@@ -499,7 +508,9 @@ body {
       <button class="back-btn" data-back="tabs">←</button>
       <div class="chat-info">
         <div class="chat-title">Общий чат</div>
-        <div class="chat-status" id="generalStatus">Все участники</div>
+        <div class="chat-status">
+          <span id="generalStatus">Все участники</span>
+        </div>
       </div>
     </div>
     
@@ -508,38 +519,8 @@ body {
     </div>
     
     <div class="input-area">
-      <input type="text" class="message-input" id="generalInput" placeholder="Сообщение для всех...">
+      <input type="text" class="message-input" id="generalInput" placeholder="Написать сообщение..." autocomplete="off">
       <button class="send-btn" id="sendGeneralBtn">➤</button>
-    </div>
-  </div>
-
-  <!-- Private Chat -->
-  <div class="chat-container" id="privateChat">
-    <div class="chat-header">
-      <button class="back-btn" data-back="chats">←</button>
-      <div class="chat-info">
-        <div class="chat-title" id="privateChatTitle">...</div>
-        <div class="chat-status" id="privateChatStatus">
-          <span id="privateStatusText">Онлайн</span>
-          <span class="typing-indicator" id="privateTypingIndicator" style="display: none;">
-            <span>печатает</span>
-            <div class="typing-dots">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-          </span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="messages-container" id="privateMessages">
-      <!-- Private messages will appear here -->
-    </div>
-    
-    <div class="input-area">
-      <input type="text" class="message-input" id="privateInput" placeholder="Личное сообщение...">
-      <button class="send-btn" id="sendPrivateBtn">➤</button>
     </div>
   </div>
 </div>
@@ -554,7 +535,7 @@ body {
   
   <div class="setting-item">
     <label class="setting-label">Ваш никнейм</label>
-    <input type="text" class="setting-input" id="nicknameInput" maxlength="20">
+    <input type="text" class="setting-input" id="nicknameInput" maxlength="20" autocomplete="off">
     <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;">Будет виден другим пользователям</div>
   </div>
   
@@ -580,29 +561,16 @@ const db = getDatabase(app);
 
 // DOM Elements
 const tabs = document.querySelectorAll('.tab');
-const containers = {
-  online: document.getElementById('onlineContainer'),
-  chats: document.getElementById('chatsContainer'),
-  general: document.getElementById('generalChat')
-};
-
-const chatContainers = {
-  general: document.getElementById('generalChat'),
-  private: document.getElementById('privateChat')
-};
-
+const onlineContainer = document.getElementById('onlineContainer');
+const generalChat = document.getElementById('generalChat');
 const userBadge = document.getElementById('userBadge');
 const headerAvatar = document.getElementById('headerAvatar');
 const headerUsername = document.getElementById('headerUsername');
 const onlineCount = document.getElementById('onlineCount');
-
-// Inputs and buttons
+const statusDot = document.getElementById('statusDot');
 const generalInput = document.getElementById('generalInput');
-const privateInput = document.getElementById('privateInput');
 const sendGeneralBtn = document.getElementById('sendGeneralBtn');
-const sendPrivateBtn = document.getElementById('sendPrivateBtn');
-
-// Settings
+const generalMessages = document.getElementById('generalMessages');
 const settingsPanel = document.getElementById('settingsPanel');
 const overlay = document.getElementById('overlay');
 const nicknameInput = document.getElementById('nicknameInput');
@@ -613,22 +581,19 @@ const closeSettingsBtn = document.getElementById('closeSettingsBtn');
 let currentUser = {
   id: null,
   name: null,
-  isOnline: false
+  isOnline: false,
+  lastActivity: Date.now()
 };
 
 let onlineUsers = {};
-let typingUsers = {};
-let currentChatWith = null;
-let userTypingTimeout = null;
+let activityCheckInterval = null;
 
 // Check saved nickname on load
 window.addEventListener('load', () => {
   const savedNickname = localStorage.getItem('astik_nickname');
   if (savedNickname) {
-    // Auto-login with saved nickname
     loginUser(savedNickname);
   } else {
-    // Show settings to set nickname
     setTimeout(() => openSettings(), 500);
   }
 });
@@ -639,6 +604,7 @@ userBadge.addEventListener('click', openSettings);
 function openSettings() {
   const currentNickname = localStorage.getItem('astik_nickname') || '';
   nicknameInput.value = currentNickname;
+  nicknameInput.focus();
   settingsPanel.classList.add('active');
   overlay.classList.add('active');
 }
@@ -661,10 +627,8 @@ saveSettingsBtn.addEventListener('click', () => {
   localStorage.setItem('astik_nickname', nickname);
   
   if (currentUser.id) {
-    // Update existing user
     updateUserNickname(nickname);
   } else {
-    // Login new user
     loginUser(nickname);
   }
   
@@ -675,6 +639,7 @@ function loginUser(nickname) {
   currentUser.id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   currentUser.name = nickname;
   currentUser.isOnline = true;
+  currentUser.lastActivity = Date.now();
 
   // Update header
   headerAvatar.textContent = nickname.charAt(0).toUpperCase();
@@ -685,12 +650,15 @@ function loginUser(nickname) {
   set(userRef, {
     name: nickname,
     isOnline: true,
+    lastActivity: Date.now(),
     lastSeen: Date.now(),
+    status: 'online',
     avatarColor: getRandomColor()
   });
 
   // Start listening
   startListening();
+  startActivityChecker();
 }
 
 function updateUserNickname(nickname) {
@@ -701,24 +669,17 @@ function updateUserNickname(nickname) {
   headerUsername.textContent = nickname;
   
   // Update in database
-  const userRef = ref(db, `users/${currentUser.id}`);
-  set(userRef, {
-    name: nickname,
-    isOnline: true,
-    lastSeen: Date.now(),
-    avatarColor: getRandomColor()
-  });
+  updateUserActivity();
 }
 
 function getRandomColor() {
-  const colors = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6'];
+  const colors = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899'];
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
 function startListening() {
   loadOnlineUsers();
   loadGeneralMessages();
-  setupTypingListener();
   setupPresence();
 }
 
@@ -731,197 +692,183 @@ tabs.forEach(tab => {
     tabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     
-    // Hide all containers
-    Object.values(containers).forEach(container => {
-      container.classList.remove('active');
-    });
-    
-    // Show selected container
     if (tabName === 'general') {
-      // For general tab, show chat directly
-      containers.online.classList.remove('active');
-      containers.chats.classList.remove('active');
-      chatContainers.general.classList.add('active');
+      // Switch to general chat
+      onlineContainer.classList.remove('active');
+      generalChat.classList.add('active');
+      generalInput.focus();
     } else {
-      // For other tabs, show list
-      containers[tabName].classList.add('active');
-      chatContainers.general.classList.remove('active');
-      chatContainers.private.classList.remove('active');
+      // Switch to online list
+      generalChat.classList.remove('active');
+      onlineContainer.classList.add('active');
     }
   });
 });
 
-// Back buttons
-document.querySelectorAll('.back-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const backTo = btn.dataset.back;
-    
-    if (backTo === 'tabs') {
-      // Back to tabs from general chat
-      chatContainers.general.classList.remove('active');
-      containers.online.classList.add('active');
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelector('[data-tab="online"]').classList.add('active');
-    } else if (backTo === 'chats') {
-      // Back to chats from private chat
-      chatContainers.private.classList.remove('active');
-      containers.chats.classList.add('active');
-      tabs.forEach(t => t.classList.remove('active'));
-      document.querySelector('[data-tab="chats"]').classList.add('active');
-      currentChatWith = null;
-    }
-  });
+// Back button in chat
+document.querySelector('.back-btn').addEventListener('click', () => {
+  generalChat.classList.remove('active');
+  onlineContainer.classList.add('active');
+  tabs.forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-tab="online"]').classList.add('active');
 });
 
-// Load online users
+// Load online users with status management
 function loadOnlineUsers() {
   const usersRef = ref(db, 'users');
-  const onlineContainer = document.getElementById('onlineContainer');
   
   onValue(usersRef, (snapshot) => {
     const users = snapshot.val();
     onlineUsers = users || {};
     
+    // Check for inactive users (more than 1 minute)
+    const now = Date.now();
+    Object.entries(onlineUsers).forEach(([userId, userData]) => {
+      if (userData.isOnline && userData.lastActivity) {
+        const timeSinceActivity = now - userData.lastActivity;
+        if (timeSinceActivity > 60000) { // 1 minute
+          // Mark as offline
+          const userRef = ref(db, `users/${userId}`);
+          set(userRef, {
+            ...userData,
+            isOnline: false,
+            status: 'offline'
+          });
+        } else if (timeSinceActivity > 30000) { // 30 seconds
+          // Mark as away
+          const userRef = ref(db, `users/${userId}`);
+          set(userRef, {
+            ...userData,
+            status: 'away'
+          });
+        }
+      }
+    });
+    
     // Update online count
-    const onlineUsersCount = Object.values(onlineUsers).filter(user => user.isOnline).length;
-    onlineCount.textContent = `${onlineUsersCount} пользователей онлайн`;
+    const activeUsers = Object.values(onlineUsers).filter(user => 
+      user.isOnline && user.lastActivity && (now - user.lastActivity <= 60000)
+    ).length;
+    
+    onlineCount.textContent = `${activeUsers} пользователей онлайн`;
+    
+    // Update current user status dot
+    if (currentUser.id && onlineUsers[currentUser.id]) {
+      const userStatus = getUserStatus(onlineUsers[currentUser.id]);
+      updateStatusDot(userStatus);
+    }
     
     // Clear and rebuild list
     onlineContainer.innerHTML = '';
     
     // Add current user first
     if (currentUser.id && onlineUsers[currentUser.id]) {
-      addUserToList(currentUser.id, onlineUsers[currentUser.id], onlineContainer, true);
+      addUserToList(currentUser.id, onlineUsers[currentUser.id], true);
     }
     
-    // Add other users
+    // Add other active users (online in last minute)
     Object.entries(onlineUsers).forEach(([userId, userData]) => {
       if (userId !== currentUser.id) {
-        addUserToList(userId, userData, onlineContainer, false);
+        const timeSinceActivity = now - (userData.lastActivity || 0);
+        if (timeSinceActivity <= 60000) { // Show only if active in last minute
+          addUserToList(userId, userData, false);
+        }
       }
     });
     
-    // Update chats list
-    updateChatsList();
+    // If no other users online
+    if (Object.keys(onlineUsers).length <= 1) {
+      onlineContainer.innerHTML += `
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-light);">
+          <p>Другие пользователи не в сети</p>
+          <p style="font-size: 13px; margin-top: 8px;">Пригласите друзей присоединиться!</p>
+        </div>
+      `;
+    }
   });
 }
 
-function addUserToList(userId, userData, container, isCurrentUser) {
+function getUserStatus(userData) {
+  if (!userData.isOnline) return 'offline';
+  
+  const now = Date.now();
+  const timeSinceActivity = now - (userData.lastActivity || 0);
+  
+  if (timeSinceActivity > 60000) return 'offline';
+  if (timeSinceActivity > 30000) return 'away';
+  return 'online';
+}
+
+function updateStatusDot(status) {
+  statusDot.className = 'status-dot';
+  if (status === 'online') {
+    statusDot.style.background = 'var(--online)';
+  } else if (status === 'away') {
+    statusDot.classList.add('away');
+  } else {
+    statusDot.classList.add('offline');
+  }
+}
+
+function addUserToList(userId, userData, isCurrentUser) {
   const userItem = document.createElement('div');
-  userItem.className = 'list-item';
-  userItem.dataset.userId = userId;
+  userItem.className = 'user-item';
   
   const avatarLetter = userData.name ? userData.name.charAt(0).toUpperCase() : '?';
-  const isOnline = userData.isOnline;
-  const statusText = isOnline ? 'Онлайн' : 'Был(а) ' + formatTime(userData.lastSeen);
+  const status = getUserStatus(userData);
+  const statusText = getStatusText(status, userData.lastActivity);
+  const statusClass = `status-${status}`;
   
   userItem.innerHTML = `
     <div class="user-avatar medium" style="background: ${userData.avatarColor || getRandomColor()};">${avatarLetter}</div>
     <div class="user-info">
       <div class="user-name">${userData.name} ${isCurrentUser ? '(Вы)' : ''}</div>
-      <div class="user-details">
-        ${isOnline ? '<div class="status-dot"></div>' : ''}
-        <span>${statusText}</span>
-        ${typingUsers[userId] ? `
-          <span class="typing-indicator">
-            печатает
-            <div class="typing-dots">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-          </span>
-        ` : ''}
+      <div class="user-status">
+        <div class="status-dot ${status}"></div>
+        <span class="${statusClass}">${statusText}</span>
       </div>
     </div>
   `;
   
-  if (!isCurrentUser) {
-    userItem.addEventListener('click', () => {
-      startPrivateChat(userId, userData.name, userData.avatarColor);
-    });
-  }
-  
-  container.appendChild(userItem);
+  onlineContainer.appendChild(userItem);
 }
 
-function formatTime(timestamp) {
+function getStatusText(status, lastActivity) {
   const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
+  const timeDiff = now - lastActivity;
   
-  if (minutes < 1) return 'только что';
-  if (minutes < 60) return `${minutes} мин назад`;
-  
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} ч назад`;
-  
-  const days = Math.floor(hours / 24);
-  return `${days} дн назад`;
-}
-
-function updateChatsList() {
-  const chatsContainer = document.getElementById('chatsContainer');
-  const hasChats = Object.keys(onlineUsers).length > 1;
-  
-  if (!hasChats) {
-    chatsContainer.innerHTML = `
-      <div class="empty-state">
-        <p>У вас пока нет личных чатов</p>
-        <p style="font-size: 13px; margin-top: 8px;">Начните общение с пользователя из списка "Онлайн"</p>
-      </div>
-    `;
-    return;
+  switch(status) {
+    case 'online':
+      if (timeDiff < 10000) return 'Только что';
+      if (timeDiff < 30000) return 'Онлайн';
+      return 'Недавно';
+    case 'away':
+      return 'Нет активности';
+    case 'offline':
+      const minutes = Math.floor(timeDiff / 60000);
+      if (minutes < 60) return `Был ${minutes} мин назад`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `Был ${hours} ч назад`;
+      return 'Давно не в сети';
+    default:
+      return 'Оффлайн';
   }
-}
-
-function startPrivateChat(userId, userName, avatarColor) {
-  currentChatWith = userId;
-  
-  // Update chat header
-  document.getElementById('privateChatTitle').textContent = userName;
-  document.getElementById('privateStatusText').textContent = onlineUsers[userId]?.isOnline ? 'Онлайн' : 'Оффлайн';
-  
-  // Load messages
-  loadPrivateMessages(userId);
-  
-  // Switch to private chat
-  containers.online.classList.remove('active');
-  containers.chats.classList.remove('active');
-  chatContainers.general.classList.remove('active');
-  chatContainers.private.classList.add('active');
 }
 
 // Load general messages
 function loadGeneralMessages() {
   const messagesRef = ref(db, 'messages/general');
-  const container = document.getElementById('generalMessages');
-  container.innerHTML = '';
+  generalMessages.innerHTML = '';
   
   onChildAdded(messagesRef, (snapshot) => {
     const message = snapshot.val();
     if (message) {
-      addMessageToContainer(message, container, 'general');
+      addMessageToContainer(message, generalMessages);
     }
   });
 }
 
-// Load private messages
-function loadPrivateMessages(userId) {
-  const chatId = [currentUser.id, userId].sort().join('_');
-  const messagesRef = ref(db, `messages/private/${chatId}`);
-  const container = document.getElementById('privateMessages');
-  container.innerHTML = '';
-  
-  onChildAdded(messagesRef, (snapshot) => {
-    const message = snapshot.val();
-    if (message) {
-      addMessageToContainer(message, container, 'private');
-    }
-  });
-}
-
-function addMessageToContainer(message, container, type) {
+function addMessageToContainer(message, container) {
   const messageDiv = document.createElement('div');
   const isSent = message.senderId === currentUser.id;
   
@@ -932,7 +879,7 @@ function addMessageToContainer(message, container, type) {
     minute: '2-digit' 
   });
   
-  if (!isSent && type === 'general') {
+  if (!isSent) {
     const senderName = onlineUsers[message.senderId]?.name || 'Аноним';
     messageDiv.innerHTML = `
       <div class="message-sender">${senderName}</div>
@@ -971,118 +918,45 @@ function sendGeneralMessage() {
   updateUserActivity();
 }
 
-// Send private message
-sendPrivateBtn.addEventListener('click', sendPrivateMessage);
-privateInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendPrivateMessage();
-});
-
-function sendPrivateMessage() {
-  const text = privateInput.value.trim();
-  if (!text || !currentUser.id || !currentChatWith) return;
-  
-  const chatId = [currentUser.id, currentChatWith].sort().join('_');
-  const messagesRef = ref(db, `messages/private/${chatId}`);
-  
-  push(messagesRef, {
-    senderId: currentUser.id,
-    text: text,
-    timestamp: Date.now()
-  });
-  
-  privateInput.value = '';
-  updateUserActivity();
-  stopTyping();
-}
-
-// Typing indicator
-function setupTypingListener() {
-  privateInput.addEventListener('input', () => {
-    if (privateInput.value.trim() && currentChatWith) {
-      startTyping();
-    } else {
-      stopTyping();
-    }
-  });
-  
-  // Listen for other users typing
-  const typingRef = ref(db, 'typing');
-  onValue(typingRef, (snapshot) => {
-    typingUsers = snapshot.val() || {};
-    
-    // Update typing indicator in private chat
-    if (currentChatWith && typingUsers[currentChatWith]) {
-      const typingTo = typingUsers[currentChatWith].typingTo;
-      if (typingTo === currentUser.id) {
-        document.getElementById('privateTypingIndicator').style.display = 'flex';
-      } else {
-        document.getElementById('privateTypingIndicator').style.display = 'none';
-      }
-    } else {
-      document.getElementById('privateTypingIndicator').style.display = 'none';
-    }
-    
-    // Update users list
-    updateTypingInUsersList();
-  });
-}
-
-function startTyping() {
-  if (!currentUser.id || !currentChatWith) return;
-  
-  const typingRef = ref(db, `typing/${currentUser.id}`);
-  set(typingRef, {
-    typingTo: currentChatWith,
-    timestamp: Date.now()
-  });
-  
-  clearTimeout(userTypingTimeout);
-  userTypingTimeout = setTimeout(stopTyping, 3000);
-}
-
-function stopTyping() {
-  if (!currentUser.id) return;
-  
-  const typingRef = ref(db, `typing/${currentUser.id}`);
-  remove(typingRef);
-}
-
-function updateTypingInUsersList() {
-  const userItems = document.querySelectorAll('.list-item');
-  userItems.forEach(item => {
-    const userId = item.dataset.userId;
-    const typingIndicator = item.querySelector('.typing-indicator');
-    
-    if (typingIndicator) {
-      if (typingUsers[userId]) {
-        typingIndicator.style.display = 'inline-flex';
-      } else {
-        typingIndicator.style.display = 'none';
-      }
-    }
-  });
-}
-
-// User activity and presence
+// Update user activity
 function updateUserActivity() {
   if (!currentUser.id) return;
+  
+  currentUser.lastActivity = Date.now();
   
   const userRef = ref(db, `users/${currentUser.id}`);
   set(userRef, {
     name: currentUser.name,
     isOnline: true,
+    lastActivity: currentUser.lastActivity,
     lastSeen: Date.now(),
+    status: 'online',
     avatarColor: getRandomColor()
   });
 }
 
-function setupPresence() {
-  // Update every 30 seconds
-  setInterval(() => {
-    if (currentUser.id && currentUser.isOnline) {
-      updateUserActivity();
+// Start activity checker
+function startActivityChecker() {
+  // Update activity every 10 seconds
+  activityCheckInterval = setInterval(() => {
+    if (currentUser.id) {
+      const now = Date.now();
+      const timeSinceActivity = now - currentUser.lastActivity;
+      
+      // If user was active in last 30 seconds, update activity
+      if (timeSinceActivity < 30000) {
+        updateUserActivity();
+      }
     }
-  }, 30000);
+  }, 10000);
+}
+
+// Setup presence tracking
+function setupPresence() {
+  // Update activity on user interaction
+  document.addEventListener('click', updateUserActivity);
+  document.addEventListener('keydown', updateUserActivity);
+  document.addEventListener('mousemove', throttle(updateUserActivity, 5000));
   
   // Mark as offline when leaving
   window.addEventListener('beforeunload', () => {
@@ -1091,24 +965,46 @@ function setupPresence() {
       set(userRef, {
         name: currentUser.name,
         isOnline: false,
+        lastActivity: Date.now(),
         lastSeen: Date.now(),
+        status: 'offline',
         avatarColor: getRandomColor()
       });
       
-      stopTyping();
+      if (activityCheckInterval) {
+        clearInterval(activityCheckInterval);
+      }
     }
   });
 }
 
-// Open general chat when clicking general tab
+// Throttle function for mousemove
+function throttle(func, limit) {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// Focus input when opening chat
 document.querySelector('[data-tab="general"]').addEventListener('click', () => {
-  const generalTab = document.querySelector('[data-tab="general"]');
-  if (generalTab.classList.contains('active') && !chatContainers.general.classList.contains('active')) {
-    containers.online.classList.remove('active');
-    containers.chats.classList.remove('active');
-    chatContainers.general.classList.add('active');
-  }
+  setTimeout(() => generalInput.focus(), 100);
 });
+
+// Auto-focus nickname input in settings
+function openSettings() {
+  const currentNickname = localStorage.getItem('astik_nickname') || '';
+  nicknameInput.value = currentNickname;
+  settingsPanel.classList.add('active');
+  overlay.classList.add('active');
+  setTimeout(() => nicknameInput.focus(), 300);
+}
 </script>
 </body>
 </html>
