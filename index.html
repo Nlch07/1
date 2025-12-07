@@ -9,20 +9,18 @@
   --primary: #7C3AED;
   --primary-light: #8B5CF6;
   --secondary: #10B981;
-  --bg: #F8FAFC;
-  --surface: #FFFFFF;
-  --surface-dark: #F1F5F9;
-  --text: #1E293B;
-  --text-light: #64748B;
-  --border: #E2E8F0;
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --surface-light: #334155;
+  --text: #F1F5F9;
+  --text-light: #94A3B8;
+  --border: #475569;
   --online: #10B981;
+  --away: #F59E0B;
   --offline: #94A3B8;
-  --typing: #F59E0B;
   --my-msg: #7C3AED;
-  --other-msg: #F1F5F9;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --radius: 16px;
-  --radius-sm: 12px;
+  --other-msg: #334155;
+  --danger: #EF4444;
 }
 
 * {
@@ -32,211 +30,80 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 16px;
-  -webkit-tap-highlight-color: transparent;
+  padding: 0;
 }
 
 .app {
   width: 100%;
-  max-width: 400px;
-  height: 85vh;
-  min-height: 600px;
+  max-width: 100%;
+  height: 100vh;
   background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
-}
-
-/* Auth Screen */
-.auth-screen {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 32px;
-  z-index: 100;
-  transition: transform 0.4s ease;
-}
-
-.auth-screen.hidden {
-  transform: translateY(-100%);
-}
-
-.auth-logo {
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-  font-size: 36px;
-  font-weight: 700;
-  color: white;
-}
-
-.auth-title {
-  color: white;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  text-align: center;
-}
-
-.auth-subtitle {
-  color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  margin-bottom: 32px;
-  font-size: 14px;
-}
-
-.auth-input {
-  width: 100%;
-  padding: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 16px;
-  margin-bottom: 16px;
-  backdrop-filter: blur(10px);
-}
-
-.auth-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.auth-input:focus {
-  outline: none;
-  border-color: white;
-}
-
-.auth-btn {
-  width: 100%;
-  padding: 16px;
-  background: white;
-  color: var(--primary);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.auth-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* Header */
 .header {
   padding: 16px;
-  background: var(--surface);
+  background: var(--surface-light);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.user-info {
+.app-title {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.user-badge {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  background: var(--surface);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   font-weight: 600;
-  font-size: 16px;
-}
-
-.user-status {
-  display: flex;
-  flex-direction: column;
-}
-
-.user-name {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.user-status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   font-size: 12px;
-  color: var(--text-light);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--online);
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--surface-dark);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.icon-btn:hover {
-  background: var(--border);
 }
 
 /* Tabs */
 .tabs {
-  display: flex;
-  background: var(--surface-dark);
-  padding: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface-light);
+  padding: 4px;
   gap: 4px;
 }
 
 .tab {
-  flex: 1;
   padding: 12px;
   border: none;
   background: none;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-light);
@@ -246,93 +113,88 @@ body {
 
 .tab.active {
   background: var(--surface);
-  color: var(--primary);
+  color: var(--text);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Users List */
-.users-container, .chats-container {
+/* Online Status */
+.online-status {
+  padding: 12px 16px;
+  background: rgba(16, 185, 129, 0.1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--online);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-dot.away {
+  background: var(--away);
+}
+
+.status-dot.offline {
+  background: var(--offline);
+  animation: none;
+}
+
+/* Online Users List */
+.online-list {
   flex: 1;
   overflow-y: auto;
   display: none;
 }
 
-.container.active {
+.online-list.active {
   display: block;
 }
 
-.user-item, .chat-item {
+.user-item {
   display: flex;
   align-items: center;
   padding: 16px;
   gap: 12px;
-  cursor: pointer;
-  transition: background 0.2s;
   border-bottom: 1px solid var(--border);
 }
 
-.user-item:hover, .chat-item:hover {
-  background: var(--surface-dark);
+.user-item:hover {
+  background: var(--surface-light);
 }
 
-.user-avatar.small {
+.user-avatar.medium {
   width: 44px;
   height: 44px;
   font-size: 16px;
 }
 
-.user-details {
+.user-info {
   flex: 1;
 }
 
-.user-details h3 {
-  font-size: 15px;
+.user-name {
   font-weight: 600;
+  font-size: 16px;
   margin-bottom: 4px;
 }
 
-.user-meta {
+.user-status {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-light);
-}
-
-.status-dot.small {
-  width: 6px;
-  height: 6px;
-}
-
-.typing-indicator {
-  color: var(--typing);
-  font-weight: 500;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.typing-dots {
-  display: flex;
-  gap: 2px;
-}
-
-.typing-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--typing);
-  animation: typing 1.4s infinite;
-}
-
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typing {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-4px); }
 }
 
 /* Chat Container */
@@ -349,57 +211,58 @@ body {
 
 .chat-header {
   padding: 16px;
-  background: var(--surface);
+  background: var(--surface-light);
   border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.chat-back {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .back-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--surface-dark);
+  background: none;
   border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   color: var(--text);
+  font-size: 20px;
   cursor: pointer;
 }
 
-.chat-user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.chat-info {
+  flex: 1;
 }
 
+.chat-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.chat-status {
+  font-size: 12px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Messages */
 .messages-container {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  background: var(--bg);
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: var(--bg);
 }
 
 .message {
-  max-width: 80%;
+  max-width: 85%;
   padding: 12px 16px;
   border-radius: 18px;
-  position: relative;
-  animation: messageAppear 0.3s ease;
+  animation: slideIn 0.3s ease;
 }
 
-@keyframes messageAppear {
+@keyframes slideIn {
   from {
     opacity: 0;
     transform: translateY(10px);
@@ -413,14 +276,12 @@ body {
 .message.sent {
   align-self: flex-end;
   background: var(--my-msg);
-  color: white;
   border-bottom-right-radius: 4px;
 }
 
 .message.received {
   align-self: flex-start;
   background: var(--other-msg);
-  color: var(--text);
   border-bottom-left-radius: 4px;
 }
 
@@ -428,7 +289,7 @@ body {
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 4px;
-  color: var(--primary);
+  color: var(--primary-light);
 }
 
 .message-time {
@@ -438,18 +299,7 @@ body {
   margin-top: 4px;
 }
 
-.typing-bubble {
-  align-self: flex-start;
-  background: var(--other-msg);
-  padding: 12px 16px;
-  border-radius: 18px;
-  border-bottom-left-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Input Area */
+/* Input */
 .input-area {
   padding: 16px;
   background: var(--surface);
@@ -462,11 +312,12 @@ body {
 .message-input {
   flex: 1;
   padding: 12px 16px;
+  background: var(--surface-light);
   border: 2px solid var(--border);
   border-radius: 24px;
+  color: var(--text);
   font-size: 15px;
   outline: none;
-  transition: border-color 0.2s;
 }
 
 .message-input:focus {
@@ -484,211 +335,216 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
+  transition: transform 0.2s;
 }
 
 .send-btn:hover {
-  background: var(--primary-light);
   transform: scale(1.05);
 }
 
-.send-btn svg {
-  width: 20px;
-  height: 20px;
+.send-btn:active {
+  transform: scale(0.95);
 }
 
-/* Online Users Count */
-.online-count {
-  padding: 12px 16px;
-  background: var(--surface-dark);
-  font-size: 14px;
+/* Settings Panel */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100%;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: 24px;
+  transition: right 0.3s;
+  z-index: 1000;
+}
+
+.settings-panel.active {
+  right: 0;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.settings-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.setting-item {
+  margin-bottom: 20px;
+}
+
+.setting-label {
+  display: block;
+  margin-bottom: 8px;
   color: var(--text-light);
-  text-align: center;
-  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.setting-input {
+  width: 100%;
+  padding: 12px;
+  background: var(--surface-light);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.save-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 24px;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  z-index: 999;
+}
+
+.overlay.active {
+  display: block;
+}
+
+/* Status Colors */
+.status-online {
+  color: var(--online);
+}
+
+.status-away {
+  color: var(--away);
+}
+
+.status-offline {
+  color: var(--offline);
 }
 
 /* Scrollbar */
-.users-container::-webkit-scrollbar,
-.chats-container::-webkit-scrollbar,
+.online-list::-webkit-scrollbar,
 .messages-container::-webkit-scrollbar {
   width: 6px;
 }
 
-.users-container::-webkit-scrollbar-track,
-.chats-container::-webkit-scrollbar-track,
+.online-list::-webkit-scrollbar-track,
 .messages-container::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.users-container::-webkit-scrollbar-thumb,
-.chats-container::-webkit-scrollbar-thumb,
+.online-list::-webkit-scrollbar-thumb,
 .messages-container::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 3px;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  .app {
-    height: 95vh;
-    min-height: 500px;
-    max-width: 100%;
+@media (max-height: 700px) {
+  .user-item {
+    padding: 12px 16px;
   }
   
-  .auth-screen {
-    padding: 24px;
+  .message {
+    padding: 10px 14px;
   }
 }
 </style>
 </head>
 <body>
-<div class="app" id="app">
-  <!-- Auth Screen -->
-  <div class="auth-screen" id="authScreen">
-    <div class="auth-logo">A</div>
-    <h1 class="auth-title">Astik Messenger</h1>
-    <p class="auth-subtitle">Общайтесь в общем чате и отправляйте личные сообщения</p>
-    <input type="text" class="auth-input" id="userNameInput" placeholder="Введите ваше имя" maxlength="20">
-    <button class="auth-btn" id="loginBtn">Начать общение</button>
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="app-title">Astik Messenger</div>
+    <div class="user-badge" id="userBadge">
+      <div class="user-avatar" id="headerAvatar">?</div>
+      <span id="headerUsername">Вход...</span>
+    </div>
   </div>
 
-  <!-- Main App -->
-  <div class="main-app" id="mainApp" style="display: none;">
-    <!-- Header -->
-    <div class="header">
-      <div class="user-info">
-        <div class="user-avatar" id="userAvatar">U</div>
-        <div class="user-status">
-          <div class="user-name" id="currentUserName">Пользователь</div>
-          <div class="user-status-indicator">
-            <div class="status-dot"></div>
-            <span id="statusText">Онлайн</span>
-          </div>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="online">Онлайн</button>
+    <button class="tab" data-tab="general">Общий чат</button>
+  </div>
+
+  <!-- Online Status -->
+  <div class="online-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="onlineCount">Загрузка...</span>
+  </div>
+
+  <!-- Online Users -->
+  <div class="online-list active" id="onlineContainer">
+    <!-- Users will appear here -->
+  </div>
+
+  <!-- General Chat -->
+  <div class="chat-container" id="generalChat">
+    <div class="chat-header">
+      <button class="back-btn" data-back="tabs">←</button>
+      <div class="chat-info">
+        <div class="chat-title">Общий чат</div>
+        <div class="chat-status">
+          <span id="generalStatus">Все участники</span>
         </div>
       </div>
-      <div class="header-actions">
-        <button class="icon-btn" id="refreshBtn" title="Обновить">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-          </svg>
-        </button>
-        <button class="icon-btn" id="logoutBtn" title="Выйти">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-          </svg>
-        </button>
-      </div>
     </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" data-tab="users">Люди</button>
-      <button class="tab" data-tab="chats">Чаты</button>
-      <button class="tab" data-tab="general">Общий</button>
+    
+    <div class="messages-container" id="generalMessages">
+      <!-- Messages will appear here -->
     </div>
-
-    <!-- Online Users Count -->
-    <div class="online-count">
-      <span id="onlineCount">1</span> пользователей онлайн
-    </div>
-
-    <!-- Users List -->
-    <div class="users-container active" id="usersContainer">
-      <!-- Users will be loaded here -->
-    </div>
-
-    <!-- Chats List -->
-    <div class="chats-container" id="chatsContainer">
-      <!-- Chats will be loaded here -->
-    </div>
-
-    <!-- General Chat -->
-    <div class="chat-container" id="generalChat">
-      <div class="chat-header">
-        <div class="chat-back">
-          <button class="back-btn" data-back="tabs">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <div class="chat-user-info">
-            <div class="user-avatar small" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6);">G</div>
-            <div>
-              <h3>Общий чат</h3>
-              <div class="user-meta">
-                <div class="status-dot small" style="background: var(--online);"></div>
-                <span id="generalChatStatus">Все участники</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="messages-container" id="generalMessages">
-        <!-- General chat messages -->
-      </div>
-      
-      <div class="input-area">
-        <input type="text" class="message-input" id="generalMessageInput" placeholder="Сообщение в общий чат...">
-        <button class="send-btn" id="sendGeneralBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Private Chat -->
-    <div class="chat-container" id="privateChat">
-      <div class="chat-header">
-        <div class="chat-back">
-          <button class="back-btn" data-back="chats">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <div class="chat-user-info">
-            <div class="user-avatar small" id="chatUserAvatar">U</div>
-            <div>
-              <h3 id="chatUserName">Пользователь</h3>
-              <div class="user-meta">
-                <div class="status-dot small" id="chatUserStatus"></div>
-                <span id="chatUserStatusText">Онлайн</span>
-                <div class="typing-indicator" id="chatTypingIndicator" style="display: none;">
-                  <span>печатает</span>
-                  <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="messages-container" id="privateMessages">
-        <!-- Private chat messages -->
-      </div>
-      
-      <div class="input-area">
-        <input type="text" class="message-input" id="privateMessageInput" placeholder="Личное сообщение...">
-        <button class="send-btn" id="sendPrivateBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
+    
+    <div class="input-area">
+      <input type="text" class="message-input" id="generalInput" placeholder="Написать сообщение..." autocomplete="off">
+      <button class="send-btn" id="sendGeneralBtn">➤</button>
     </div>
   </div>
 </div>
 
+<!-- Settings Panel -->
+<div class="overlay" id="overlay"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <div class="settings-title">Настройки</div>
+    <button class="close-btn" id="closeSettingsBtn">×</button>
+  </div>
+  
+  <div class="setting-item">
+    <label class="setting-label">Ваш никнейм</label>
+    <input type="text" class="setting-input" id="nicknameInput" maxlength="20" autocomplete="off">
+    <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;">Будет виден другим пользователям</div>
+  </div>
+  
+  <button class="save-btn" id="saveSettingsBtn">Сохранить</button>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, set, push, onChildAdded, onChildChanged, onValue, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, set, push, onChildAdded, onValue, remove, get } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
@@ -704,121 +560,128 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 // DOM Elements
-const authScreen = document.getElementById('authScreen');
-const mainApp = document.getElementById('mainApp');
-const userNameInput = document.getElementById('userNameInput');
-const loginBtn = document.getElementById('loginBtn');
-const currentUserName = document.getElementById('currentUserName');
-const userAvatar = document.getElementById('userAvatar');
-const statusText = document.getElementById('statusText');
-const logoutBtn = document.getElementById('logoutBtn');
-const refreshBtn = document.getElementById('refreshBtn');
-const onlineCount = document.getElementById('onlineCount');
-
-// Tabs
 const tabs = document.querySelectorAll('.tab');
-const containers = {
-  users: document.getElementById('usersContainer'),
-  chats: document.getElementById('chatsContainer'),
-  general: document.getElementById('generalChat')
-};
-
-// Chat elements
+const onlineContainer = document.getElementById('onlineContainer');
 const generalChat = document.getElementById('generalChat');
-const privateChat = document.getElementById('privateChat');
-const generalMessages = document.getElementById('generalMessages');
-const privateMessages = document.getElementById('privateMessages');
-const generalMessageInput = document.getElementById('generalMessageInput');
-const privateMessageInput = document.getElementById('privateMessageInput');
+const userBadge = document.getElementById('userBadge');
+const headerAvatar = document.getElementById('headerAvatar');
+const headerUsername = document.getElementById('headerUsername');
+const onlineCount = document.getElementById('onlineCount');
+const statusDot = document.getElementById('statusDot');
+const generalInput = document.getElementById('generalInput');
 const sendGeneralBtn = document.getElementById('sendGeneralBtn');
-const sendPrivateBtn = document.getElementById('sendPrivateBtn');
+const generalMessages = document.getElementById('generalMessages');
+const settingsPanel = document.getElementById('settingsPanel');
+const overlay = document.getElementById('overlay');
+const nicknameInput = document.getElementById('nicknameInput');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
 
 // User state
 let currentUser = {
   id: null,
   name: null,
   isOnline: false,
-  lastSeen: null
+  lastActivity: Date.now()
 };
 
 let onlineUsers = {};
-let typingUsers = {};
-let currentChatWith = null;
-let userTypingTimeout = null;
+let activityCheckInterval = null;
 
-// Generate user ID
-function generateUserId() {
-  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+// Check saved nickname on load
+window.addEventListener('load', () => {
+  const savedNickname = localStorage.getItem('astik_nickname');
+  if (savedNickname) {
+    loginUser(savedNickname);
+  } else {
+    setTimeout(() => openSettings(), 500);
+  }
+});
+
+// Open settings when clicking user badge
+userBadge.addEventListener('click', openSettings);
+
+function openSettings() {
+  const currentNickname = localStorage.getItem('astik_nickname') || '';
+  nicknameInput.value = currentNickname;
+  nicknameInput.focus();
+  settingsPanel.classList.add('active');
+  overlay.classList.add('active');
 }
 
-// Login
-loginBtn.addEventListener('click', () => {
-  const userName = userNameInput.value.trim();
-  if (!userName) {
-    alert('Пожалуйста, введите ваше имя');
+function closeSettings() {
+  settingsPanel.classList.remove('active');
+  overlay.classList.remove('active');
+}
+
+closeSettingsBtn.addEventListener('click', closeSettings);
+overlay.addEventListener('click', closeSettings);
+
+saveSettingsBtn.addEventListener('click', () => {
+  const nickname = nicknameInput.value.trim();
+  if (!nickname) {
+    alert('Введите никнейм');
     return;
   }
+  
+  localStorage.setItem('astik_nickname', nickname);
+  
+  if (currentUser.id) {
+    updateUserNickname(nickname);
+  } else {
+    loginUser(nickname);
+  }
+  
+  closeSettings();
+});
 
-  currentUser.id = generateUserId();
-  currentUser.name = userName;
+function loginUser(nickname) {
+  currentUser.id = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  currentUser.name = nickname;
   currentUser.isOnline = true;
-  currentUser.lastSeen = Date.now();
+  currentUser.lastActivity = Date.now();
 
-  // Set avatar initial
-  userAvatar.textContent = userName.charAt(0).toUpperCase();
-  currentUserName.textContent = userName;
+  // Update header
+  headerAvatar.textContent = nickname.charAt(0).toUpperCase();
+  headerUsername.textContent = nickname;
 
   // Save user to database
   const userRef = ref(db, `users/${currentUser.id}`);
   set(userRef, {
-    name: userName,
+    name: nickname,
     isOnline: true,
+    lastActivity: Date.now(),
     lastSeen: Date.now(),
-    lastActivity: Date.now()
+    status: 'online',
+    avatarColor: getRandomColor()
   });
 
-  // Switch to main app
-  authScreen.classList.add('hidden');
-  setTimeout(() => {
-    authScreen.style.display = 'none';
-    mainApp.style.display = 'block';
-  }, 400);
+  // Start listening
+  startListening();
+  startActivityChecker();
+}
 
-  // Load users and messages
+function updateUserNickname(nickname) {
+  currentUser.name = nickname;
+  
+  // Update header
+  headerAvatar.textContent = nickname.charAt(0).toUpperCase();
+  headerUsername.textContent = nickname;
+  
+  // Update in database
+  updateUserActivity();
+}
+
+function getRandomColor() {
+  const colors = ['#7C3AED', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function startListening() {
   loadOnlineUsers();
   loadGeneralMessages();
-  setupTypingListeners();
-});
-
-// Logout
-logoutBtn.addEventListener('click', () => {
-  if (currentUser.id) {
-    const userRef = ref(db, `users/${currentUser.id}`);
-    set(userRef, {
-      name: currentUser.name,
-      isOnline: false,
-      lastSeen: Date.now(),
-      lastActivity: Date.now()
-    });
-  }
-
-  currentUser = { id: null, name: null, isOnline: false };
-  mainApp.style.display = 'none';
-  authScreen.style.display = 'flex';
-  setTimeout(() => {
-    authScreen.classList.remove('hidden');
-  }, 50);
-  userNameInput.value = '';
-});
-
-// Refresh
-refreshBtn.addEventListener('click', () => {
-  loadOnlineUsers();
-  loadGeneralMessages();
-  if (currentChatWith) {
-    loadPrivateMessages(currentChatWith);
-  }
-});
+  setupPresence();
+}
 
 // Tab switching
 tabs.forEach(tab => {
@@ -829,127 +692,167 @@ tabs.forEach(tab => {
     tabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     
-    // Hide all containers
-    Object.values(containers).forEach(container => {
-      container.classList.remove('active');
-    });
-    
-    // Show selected container
-    containers[tabName].classList.add('active');
-    
-    // Hide chat containers
-    generalChat.classList.remove('active');
-    privateChat.classList.remove('active');
-  });
-});
-
-// Back buttons
-document.querySelectorAll('.back-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const backTo = btn.dataset.back;
-    
-    if (backTo === 'tabs') {
+    if (tabName === 'general') {
+      // Switch to general chat
+      onlineContainer.classList.remove('active');
+      generalChat.classList.add('active');
+      generalInput.focus();
+    } else {
+      // Switch to online list
       generalChat.classList.remove('active');
-      containers.general.classList.add('active');
-    } else if (backTo === 'chats') {
-      privateChat.classList.remove('active');
-      containers.chats.classList.add('active');
-      currentChatWith = null;
+      onlineContainer.classList.add('active');
     }
   });
 });
 
-// Load online users
+// Back button in chat
+document.querySelector('.back-btn').addEventListener('click', () => {
+  generalChat.classList.remove('active');
+  onlineContainer.classList.add('active');
+  tabs.forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-tab="online"]').classList.add('active');
+});
+
+// Load online users with status management
 function loadOnlineUsers() {
   const usersRef = ref(db, 'users');
-  const usersContainer = document.getElementById('usersContainer');
   
   onValue(usersRef, (snapshot) => {
     const users = snapshot.val();
     onlineUsers = users || {};
     
-    // Update online count
-    const onlineCountValue = Object.values(onlineUsers).filter(user => user.isOnline).length;
-    onlineCount.textContent = onlineCountValue;
+    // Check for inactive users (more than 1 minute)
+    const now = Date.now();
+    Object.entries(onlineUsers).forEach(([userId, userData]) => {
+      if (userData.isOnline && userData.lastActivity) {
+        const timeSinceActivity = now - userData.lastActivity;
+        if (timeSinceActivity > 60000) { // 1 minute
+          // Mark as offline
+          const userRef = ref(db, `users/${userId}`);
+          set(userRef, {
+            ...userData,
+            isOnline: false,
+            status: 'offline'
+          });
+        } else if (timeSinceActivity > 30000) { // 30 seconds
+          // Mark as away
+          const userRef = ref(db, `users/${userId}`);
+          set(userRef, {
+            ...userData,
+            status: 'away'
+          });
+        }
+      }
+    });
     
-    // Clear container
-    usersContainer.innerHTML = '';
+    // Update online count
+    const activeUsers = Object.values(onlineUsers).filter(user => 
+      user.isOnline && user.lastActivity && (now - user.lastActivity <= 60000)
+    ).length;
+    
+    onlineCount.textContent = `${activeUsers} пользователей онлайн`;
+    
+    // Update current user status dot
+    if (currentUser.id && onlineUsers[currentUser.id]) {
+      const userStatus = getUserStatus(onlineUsers[currentUser.id]);
+      updateStatusDot(userStatus);
+    }
+    
+    // Clear and rebuild list
+    onlineContainer.innerHTML = '';
     
     // Add current user first
     if (currentUser.id && onlineUsers[currentUser.id]) {
-      addUserToList(currentUser.id, onlineUsers[currentUser.id], usersContainer, true);
+      addUserToList(currentUser.id, onlineUsers[currentUser.id], true);
     }
     
-    // Add other users
+    // Add other active users (online in last minute)
     Object.entries(onlineUsers).forEach(([userId, userData]) => {
       if (userId !== currentUser.id) {
-        addUserToList(userId, userData, usersContainer, false);
+        const timeSinceActivity = now - (userData.lastActivity || 0);
+        if (timeSinceActivity <= 60000) { // Show only if active in last minute
+          addUserToList(userId, userData, false);
+        }
       }
     });
+    
+    // If no other users online
+    if (Object.keys(onlineUsers).length <= 1) {
+      onlineContainer.innerHTML += `
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-light);">
+          <p>Другие пользователи не в сети</p>
+          <p style="font-size: 13px; margin-top: 8px;">Пригласите друзей присоединиться!</p>
+        </div>
+      `;
+    }
   });
 }
 
-function addUserToList(userId, userData, container, isCurrentUser) {
+function getUserStatus(userData) {
+  if (!userData.isOnline) return 'offline';
+  
+  const now = Date.now();
+  const timeSinceActivity = now - (userData.lastActivity || 0);
+  
+  if (timeSinceActivity > 60000) return 'offline';
+  if (timeSinceActivity > 30000) return 'away';
+  return 'online';
+}
+
+function updateStatusDot(status) {
+  statusDot.className = 'status-dot';
+  if (status === 'online') {
+    statusDot.style.background = 'var(--online)';
+  } else if (status === 'away') {
+    statusDot.classList.add('away');
+  } else {
+    statusDot.classList.add('offline');
+  }
+}
+
+function addUserToList(userId, userData, isCurrentUser) {
   const userItem = document.createElement('div');
   userItem.className = 'user-item';
-  userItem.dataset.userId = userId;
   
-  const avatarLetter = userData.name ? userData.name.charAt(0).toUpperCase() : 'U';
-  const statusColor = userData.isOnline ? 'var(--online)' : 'var(--offline)';
-  const statusText = userData.isOnline ? 'Онлайн' : 'Оффлайн';
+  const avatarLetter = userData.name ? userData.name.charAt(0).toUpperCase() : '?';
+  const status = getUserStatus(userData);
+  const statusText = getStatusText(status, userData.lastActivity);
+  const statusClass = `status-${status}`;
   
   userItem.innerHTML = `
-    <div class="user-avatar small" style="background: ${isCurrentUser ? 'linear-gradient(135deg, var(--primary), var(--primary-light))' : 'linear-gradient(135deg, #10B981, #34D399)'};">${avatarLetter}</div>
-    <div class="user-details">
-      <h3>${userData.name} ${isCurrentUser ? '(Вы)' : ''}</h3>
-      <div class="user-meta">
-        <div class="status-dot small" style="background: ${statusColor};"></div>
-        <span>${statusText}</span>
-        ${typingUsers[userId] ? `
-          <div class="typing-indicator">
-            <span>печатает</span>
-            <div class="typing-dots">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-          </div>
-        ` : ''}
+    <div class="user-avatar medium" style="background: ${userData.avatarColor || getRandomColor()};">${avatarLetter}</div>
+    <div class="user-info">
+      <div class="user-name">${userData.name} ${isCurrentUser ? '(Вы)' : ''}</div>
+      <div class="user-status">
+        <div class="status-dot ${status}"></div>
+        <span class="${statusClass}">${statusText}</span>
       </div>
     </div>
   `;
   
-  if (!isCurrentUser) {
-    userItem.addEventListener('click', () => {
-      startPrivateChat(userId, userData.name);
-    });
-  }
-  
-  container.appendChild(userItem);
+  onlineContainer.appendChild(userItem);
 }
 
-// Start private chat
-function startPrivateChat(userId, userName) {
-  currentChatWith = userId;
+function getStatusText(status, lastActivity) {
+  const now = Date.now();
+  const timeDiff = now - lastActivity;
   
-  // Update chat header
-  document.getElementById('chatUserName').textContent = userName;
-  document.getElementById('chatUserAvatar').textContent = userName.charAt(0).toUpperCase();
-  
-  // Check online status
-  const userData = onlineUsers[userId];
-  const statusColor = userData && userData.isOnline ? 'var(--online)' : 'var(--offline)';
-  const statusText = userData && userData.isOnline ? 'Онлайн' : 'Оффлайн';
-  
-  document.getElementById('chatUserStatus').style.background = statusColor;
-  document.getElementById('chatUserStatusText').textContent = statusText;
-  
-  // Load messages
-  loadPrivateMessages(userId);
-  
-  // Switch to private chat
-  containers.chats.classList.remove('active');
-  privateChat.classList.add('active');
+  switch(status) {
+    case 'online':
+      if (timeDiff < 10000) return 'Только что';
+      if (timeDiff < 30000) return 'Онлайн';
+      return 'Недавно';
+    case 'away':
+      return 'Нет активности';
+    case 'offline':
+      const minutes = Math.floor(timeDiff / 60000);
+      if (minutes < 60) return `Был ${minutes} мин назад`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `Был ${hours} ч назад`;
+      return 'Давно не в сети';
+    default:
+      return 'Оффлайн';
+  }
 }
 
 // Load general messages
@@ -960,35 +863,23 @@ function loadGeneralMessages() {
   onChildAdded(messagesRef, (snapshot) => {
     const message = snapshot.val();
     if (message) {
-      addMessageToContainer(message, generalMessages, 'general');
+      addMessageToContainer(message, generalMessages);
     }
   });
 }
 
-// Load private messages
-function loadPrivateMessages(userId) {
-  const chatId = [currentUser.id, userId].sort().join('_');
-  const messagesRef = ref(db, `messages/private/${chatId}`);
-  privateMessages.innerHTML = '';
-  
-  onChildAdded(messagesRef, (snapshot) => {
-    const message = snapshot.val();
-    if (message) {
-      addMessageToContainer(message, privateMessages, 'private');
-    }
-  });
-}
-
-// Add message to container
-function addMessageToContainer(message, container, type) {
+function addMessageToContainer(message, container) {
   const messageDiv = document.createElement('div');
   const isSent = message.senderId === currentUser.id;
   
   messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
   
-  const time = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const time = new Date(message.timestamp).toLocaleTimeString([], { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
   
-  if (!isSent && type === 'general') {
+  if (!isSent) {
     const senderName = onlineUsers[message.senderId]?.name || 'Аноним';
     messageDiv.innerHTML = `
       <div class="message-sender">${senderName}</div>
@@ -1008,12 +899,12 @@ function addMessageToContainer(message, container, type) {
 
 // Send general message
 sendGeneralBtn.addEventListener('click', sendGeneralMessage);
-generalMessageInput.addEventListener('keypress', (e) => {
+generalInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') sendGeneralMessage();
 });
 
 function sendGeneralMessage() {
-  const text = generalMessageInput.value.trim();
+  const text = generalInput.value.trim();
   if (!text || !currentUser.id) return;
   
   const messagesRef = ref(db, 'messages/general');
@@ -1023,151 +914,97 @@ function sendGeneralMessage() {
     timestamp: Date.now()
   });
   
-  generalMessageInput.value = '';
+  generalInput.value = '';
   updateUserActivity();
-}
-
-// Send private message
-sendPrivateBtn.addEventListener('click', sendPrivateMessage);
-privateMessageInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') sendPrivateMessage();
-});
-
-function sendPrivateMessage() {
-  const text = privateMessageInput.value.trim();
-  if (!text || !currentUser.id || !currentChatWith) return;
-  
-  const chatId = [currentUser.id, currentChatWith].sort().join('_');
-  const messagesRef = ref(db, `messages/private/${chatId}`);
-  
-  push(messagesRef, {
-    senderId: currentUser.id,
-    text: text,
-    timestamp: Date.now()
-  });
-  
-  privateMessageInput.value = '';
-  updateUserActivity();
-  stopTyping();
-}
-
-// Typing indicators
-function setupTypingListeners() {
-  // Listen for typing in private chat
-  privateMessageInput.addEventListener('input', () => {
-    if (privateMessageInput.value.trim() && currentChatWith) {
-      startTyping();
-    } else {
-      stopTyping();
-    }
-  });
-  
-  // Listen for other users typing
-  const typingRef = ref(db, 'typing');
-  onChildChanged(typingRef, (snapshot) => {
-    const typingData = snapshot.val();
-    typingUsers = typingData || {};
-    
-    // Update UI
-    updateTypingIndicators();
-  });
-}
-
-function startTyping() {
-  if (!currentUser.id || !currentChatWith) return;
-  
-  const typingRef = ref(db, `typing/${currentUser.id}`);
-  set(typingRef, {
-    typingTo: currentChatWith,
-    timestamp: Date.now()
-  });
-  
-  clearTimeout(userTypingTimeout);
-  userTypingTimeout = setTimeout(stopTyping, 3000);
-}
-
-function stopTyping() {
-  if (!currentUser.id) return;
-  
-  const typingRef = ref(db, `typing/${currentUser.id}`);
-  remove(typingRef);
-}
-
-function updateTypingIndicators() {
-  // Check if current chat partner is typing
-  if (currentChatWith && typingUsers[currentChatWith]) {
-    const typingTo = typingUsers[currentChatWith].typingTo;
-    if (typingTo === currentUser.id) {
-      document.getElementById('chatTypingIndicator').style.display = 'flex';
-      document.getElementById('chatUserStatusText').style.display = 'none';
-    } else {
-      document.getElementById('chatTypingIndicator').style.display = 'none';
-      document.getElementById('chatUserStatusText').style.display = 'inline';
-    }
-  } else {
-    document.getElementById('chatTypingIndicator').style.display = 'none';
-    document.getElementById('chatUserStatusText').style.display = 'inline';
-  }
-  
-  // Update users list
-  const userItems = document.querySelectorAll('.user-item');
-  userItems.forEach(item => {
-    const userId = item.dataset.userId;
-    if (typingUsers[userId]) {
-      // Show typing indicator in users list
-      const typingIndicator = item.querySelector('.typing-indicator');
-      if (typingIndicator) {
-        typingIndicator.style.display = 'flex';
-      }
-    }
-  });
 }
 
 // Update user activity
 function updateUserActivity() {
   if (!currentUser.id) return;
   
+  currentUser.lastActivity = Date.now();
+  
   const userRef = ref(db, `users/${currentUser.id}`);
   set(userRef, {
     name: currentUser.name,
     isOnline: true,
+    lastActivity: currentUser.lastActivity,
     lastSeen: Date.now(),
-    lastActivity: Date.now()
+    status: 'online',
+    avatarColor: getRandomColor()
   });
 }
 
-// Keep user online
-setInterval(() => {
-  if (currentUser.id && currentUser.isOnline) {
-    updateUserActivity();
-  }
-}, 30000);
+// Start activity checker
+function startActivityChecker() {
+  // Update activity every 10 seconds
+  activityCheckInterval = setInterval(() => {
+    if (currentUser.id) {
+      const now = Date.now();
+      const timeSinceActivity = now - currentUser.lastActivity;
+      
+      // If user was active in last 30 seconds, update activity
+      if (timeSinceActivity < 30000) {
+        updateUserActivity();
+      }
+    }
+  }, 10000);
+}
 
-// Switch to general chat
-const generalTab = document.querySelector('[data-tab="general"]');
-generalTab.addEventListener('click', () => {
-  // If clicking general tab while already active, open chat
-  if (generalTab.classList.contains('active') && !generalChat.classList.contains('active')) {
-    containers.general.classList.remove('active');
-    generalChat.classList.add('active');
-  }
+// Setup presence tracking
+function setupPresence() {
+  // Update activity on user interaction
+  document.addEventListener('click', updateUserActivity);
+  document.addEventListener('keydown', updateUserActivity);
+  document.addEventListener('mousemove', throttle(updateUserActivity, 5000));
+  
+  // Mark as offline when leaving
+  window.addEventListener('beforeunload', () => {
+    if (currentUser.id) {
+      const userRef = ref(db, `users/${currentUser.id}`);
+      set(userRef, {
+        name: currentUser.name,
+        isOnline: false,
+        lastActivity: Date.now(),
+        lastSeen: Date.now(),
+        status: 'offline',
+        avatarColor: getRandomColor()
+      });
+      
+      if (activityCheckInterval) {
+        clearInterval(activityCheckInterval);
+      }
+    }
+  });
+}
+
+// Throttle function for mousemove
+function throttle(func, limit) {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// Focus input when opening chat
+document.querySelector('[data-tab="general"]').addEventListener('click', () => {
+  setTimeout(() => generalInput.focus(), 100);
 });
 
-// Initialize
-window.addEventListener('beforeunload', () => {
-  if (currentUser.id) {
-    const userRef = ref(db, `users/${currentUser.id}`);
-    set(userRef, {
-      name: currentUser.name,
-      isOnline: false,
-      lastSeen: Date.now(),
-      lastActivity: Date.now()
-    });
-  }
-});
-
-// Auto-focus name input
-userNameInput.focus();
+// Auto-focus nickname input in settings
+function openSettings() {
+  const currentNickname = localStorage.getItem('astik_nickname') || '';
+  nicknameInput.value = currentNickname;
+  settingsPanel.classList.add('active');
+  overlay.classList.add('active');
+  setTimeout(() => nicknameInput.focus(), 300);
+}
 </script>
 </body>
 </html>
