@@ -3,68 +3,500 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AstikMessenger</title>
+<title>Astik Messenger</title>
 <style>
-:root{
-  --bg:#e5ddd5; --chat-bg:#ffffff; --my-msg:#dcf8c6; --accent1:#34b7f1; --accent2:#0078ff;
-  --text:#000; --time:#999; --header:#075e54;
+:root {
+  --primary: #4a6cf7;
+  --primary-dark: #3a5ce5;
+  --secondary: #f1f5ff;
+  --bg: #f8fafc;
+  --white: #ffffff;
+  --gray-light: #e2e8f0;
+  --gray: #94a3b8;
+  --gray-dark: #64748b;
+  --black: #1e293b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radius: 16px;
+  --radius-sm: 10px;
 }
-body, html{margin:0;padding:0;height:100%;font-family:'Segoe UI',Roboto,sans-serif;background:var(--bg);}
-.app{max-width:600px;margin:0 auto;height:100vh;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
-.header{display:flex;align-items:center;padding:12px;background:var(--header);color:white;}
-.logo{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;background:rgba(255,255,255,0.3);}
-.title{font-size:18px;font-weight:600;margin-left:10px;}
-.header .actions{margin-left:auto;display:flex;gap:8px;}
-.btn{background:transparent;border:none;color:inherit;font-size:18px;padding:6px;cursor:pointer;}
-.messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--bg);}
-.msg-row{display:flex;flex-direction:column;}
-.msg{max-width:75%;padding:10px 12px;border-radius:8px;background:var(--chat-bg);word-wrap:break-word;position:relative;}
-.msg.me{margin-left:auto;background:var(--my-msg);}
-.nick{font-weight:600;font-size:13px;margin-bottom:4px;color:var(--accent1);}
-.time{font-size:11px;color:var(--time);margin-top:4px;text-align:right;}
-.audio-msg{width:180px;margin-top:6px;}
-.compose{display:flex;gap:6px;padding:8px;border-top:1px solid #ccc;background:var(--chat-bg);align-items:center;}
-.compose input[type="text"]{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;font-size:14px;}
-.compose .compose-btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white;border:none;padding:10px 12px;border-radius:50px;font-size:16px;cursor:pointer;}
-.compose .icon-btn{background:transparent;border:none;font-size:20px;padding:6px;cursor:pointer;}
-.recorder{display:flex;gap:6px;align-items:center;padding:6px;border-radius:10px;background:rgba(0,120,255,0.1);margin:4px 0;}
-.rec-dot{width:10px;height:10px;border-radius:50%;background:#d9534f;animation:blink 1s linear infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.1}}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--black);
+  line-height: 1.5;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.app {
+  width: 100%;
+  max-width: 380px;
+  height: 85vh;
+  min-height: 600px;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.header-info {
+  flex: 1;
+}
+
+.header-info h1 {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.header-info p {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Messages Container */
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  max-width: 85%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.received {
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.message.sent {
+  background: var(--primary);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.message-sender {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--primary);
+}
+
+.message.sent .message-sender {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.message-text {
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.message-time {
+  font-size: 11px;
+  opacity: 0.7;
+  text-align: right;
+  margin-top: 6px;
+}
+
+/* Audio Message */
+.audio-message {
+  margin-top: 8px;
+}
+
+.audio-player {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.message.received .audio-player {
+  background: var(--secondary);
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.play-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.play-btn:hover {
+  transform: scale(1.1);
+}
+
+.audio-info {
+  flex: 1;
+}
+
+.audio-duration {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.audio-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+}
+
+.wave-bar {
+  width: 3px;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 0.6;
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%, 100% { height: 8px; }
+  50% { height: 16px; }
+}
+
+.wave-bar:nth-child(2) { animation-delay: 0.2s; }
+.wave-bar:nth-child(3) { animation-delay: 0.4s; }
+.wave-bar:nth-child(4) { animation-delay: 0.6s; }
+.wave-bar:nth-child(5) { animation-delay: 0.8s; }
+
+/* Recording UI */
+.recording-ui {
+  padding: 12px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--gray-light);
+  display: none;
+}
+
+.recording-box {
+  background: var(--secondary);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background: var(--danger);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.recording-time {
+  font-family: 'SF Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.recording-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.record-btn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.record-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.cancel-btn {
+  background: var(--gray);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background: var(--gray-dark);
+}
+
+/* Input Area */
+.input-area {
+  padding: 12px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--gray-light);
+  display: flex;
+  gap: 8px;
+}
+
+.message-input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid var(--gray-light);
+  border-radius: 24px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--bg);
+}
+
+.message-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+.icon-btn.recording {
+  background: var(--danger);
+  animation: pulse 2s infinite;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Status Indicator */
+.status-indicator {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: var(--secondary);
+  border-radius: 12px;
+  text-align: center;
+  margin: 8px auto;
+  color: var(--gray-dark);
+  max-width: fit-content;
+}
+
+/* Scrollbar */
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: var(--gray-light);
+  border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: var(--gray);
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .app {
+    height: 95vh;
+    min-height: 500px;
+  }
+  
+  .messages-container {
+    padding: 12px;
+  }
+  
+  .message {
+    padding: 10px;
+  }
+}
 </style>
 </head>
 <body>
 <div class="app" id="app">
-
+  <!-- Header -->
   <div class="header">
-    <div class="logo">A</div>
-    <div class="title">AstikMessenger</div>
-    <div class="actions">
-      <button id="btnSignIn" class="btn">Войти</button>
-      <button id="btnSignOut" class="btn" style="display:none">⤫</button>
+    <div class="avatar">A</div>
+    <div class="header-info">
+      <h1>Astik Messenger</h1>
+      <p id="statusText">Подключение...</p>
+    </div>
+    <div class="auth-buttons">
+      <button id="btnSignIn" class="auth-btn">Войти</button>
+      <button id="btnSignOut" class="auth-btn" style="display:none">Выйти</button>
     </div>
   </div>
 
-  <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
-    <div id="messages" class="messages"></div>
+  <!-- Messages -->
+  <div class="messages-container" id="messagesContainer">
+    <div class="status-indicator" id="connectionStatus">Подключение к чату...</div>
+  </div>
 
-    <div id="recorderUI" style="display:none;">
-      <div class="recorder">
-        <div class="rec-dot"></div>
-        <div id="recTime">00:00</div>
-        <div style="margin-left:auto; display:flex; gap:6px;">
-          <button id="btnCancelRec" class="icon-btn">✖</button>
-          <button id="btnSendRec" class="compose-btn">Отправить</button>
-        </div>
+  <!-- Recording UI -->
+  <div class="recording-ui" id="recordingUI">
+    <div class="recording-box">
+      <div class="recording-indicator">
+        <div class="recording-dot"></div>
+        <div class="recording-time" id="recordingTime">00:00</div>
+      </div>
+      <div class="recording-actions">
+        <button class="cancel-btn" id="btnCancelRec">Отмена</button>
+        <button class="record-btn" id="btnSendRec">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        </button>
       </div>
     </div>
-
-    <div class="compose">
-      <input id="inputMessage" type="text" placeholder="Сообщение..." autocomplete="off">
-      <button id="btnRecord" class="icon-btn" title="Голосовое сообщение">🎤</button>
-      <button id="btnSend" class="compose-btn">➤</button>
-    </div>
   </div>
 
+  <!-- Input Area -->
+  <div class="input-area">
+    <input type="text" class="message-input" id="inputMessage" placeholder="Введите сообщение..." autocomplete="off">
+    <div class="action-buttons">
+      <button class="icon-btn" id="btnRecord" title="Записать голосовое">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btnSend" title="Отправить">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -88,193 +520,392 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const storage = getStorage(app);
 
-/* DOM */
-const btnSignIn = document.getElementById("btnSignIn");
-const btnSignOut = document.getElementById("btnSignOut");
-const messagesEl = document.getElementById("messages");
-const btnSend = document.getElementById("btnSend");
-const inputMessage = document.getElementById("inputMessage");
-const btnRecord = document.getElementById("btnRecord");
-const recorderUI = document.getElementById("recorderUI");
-const recTimeEl = document.getElementById("recTime");
-const btnCancelRec = document.getElementById("btnCancelRec");
-const btnSendRec = document.getElementById("btnSendRec");
+// DOM Elements
+const messagesContainer = document.getElementById('messagesContainer');
+const inputMessage = document.getElementById('inputMessage');
+const btnSend = document.getElementById('btnSend');
+const btnRecord = document.getElementById('btnRecord');
+const btnSignIn = document.getElementById('btnSignIn');
+const btnSignOut = document.getElementById('btnSignOut');
+const recordingUI = document.getElementById('recordingUI');
+const recordingTime = document.getElementById('recordingTime');
+const btnCancelRec = document.getElementById('btnCancelRec');
+const btnSendRec = document.getElementById('btnSendRec');
+const statusText = document.getElementById('statusText');
+const connectionStatus = document.getElementById('connectionStatus');
 
+// State
 let currentUser = null;
-let localDeviceId = "dev_"+Math.random().toString(36).slice(2,9);
-let mediaRecorder=null, recordedChunks=[], recStartTs=0, recTimer=null;
-let audioStream = null; // Добавлено: для хранения потока
+let localDeviceId = "dev_" + Math.random().toString(36).slice(2, 9);
+let mediaRecorder = null;
+let recordedChunks = [];
+let recStartTs = 0;
+let recTimer = null;
+let audioStream = null;
+let activeAudios = new Map();
 
-/* Auth */
-btnSignIn.addEventListener("click", async()=>{
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-});
-btnSignOut.addEventListener("click", ()=>signOut(auth));
-onAuthStateChanged(auth, user=>{
-  currentUser=user;
-  btnSignIn.style.display=user?"none":"inline-block";
-  btnSignOut.style.display=user?"inline-block":"none";
-});
-
-/* Messages */
-function fmtTime(ts){const d=new Date(ts||Date.now()); return d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');}
-const msgsRef = ref(db,"messages");
-onChildAdded(msgsRef, snap=>{ renderMessage(snap.val()); });
-
-function renderMessage(msg){
-  const isMe = msg.senderId === (currentUser?currentUser.uid:localDeviceId);
-  const row=document.createElement("div"); row.className="msg-row";
-  const bubble=document.createElement("div"); bubble.className="msg"+(isMe?" me":"");
-  if(!isMe){ const nick=document.createElement("div"); nick.className="nick"; nick.textContent=msg.name||"User"; bubble.appendChild(nick);}
-  if(msg.type==="text"||!msg.type){ const p=document.createElement("div"); p.textContent=msg.text; bubble.appendChild(p);}
-  else if(msg.type==="audio"&&msg.audioUrl){ 
-    const audio=document.createElement("audio"); 
-    audio.controls=true; 
-    audio.src=msg.audioUrl; 
-    audio.className="audio-msg"; 
-    audio.preload="metadata";
-    bubble.appendChild(audio);
+// Auth
+btnSignIn.addEventListener('click', async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    connectionStatus.textContent = "Вход выполнен успешно";
+  } catch (error) {
+    console.error('Auth error:', error);
+    connectionStatus.textContent = "Ошибка входа";
   }
-  const t=document.createElement("div"); t.className="time"; t.textContent=fmtTime(msg.time); bubble.appendChild(t);
-  row.appendChild(bubble); messagesEl.appendChild(row);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+});
+
+btnSignOut.addEventListener('click', () => {
+  signOut(auth);
+  connectionStatus.textContent = "Вы вышли из аккаунта";
+});
+
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  btnSignIn.style.display = user ? 'none' : 'block';
+  btnSignOut.style.display = user ? 'block' : 'none';
+  statusText.textContent = user ? `Вы: ${user.displayName}` : 'Гостевой режим';
+  
+  if (user) {
+    connectionStatus.textContent = `Добро пожаловать, ${user.displayName}!`;
+    setTimeout(() => {
+      connectionStatus.style.display = 'none';
+    }, 2000);
+  }
+});
+
+// Messages
+function formatTime(timestamp) {
+  const date = new Date(timestamp);
+  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 }
 
-/* Send Text */
-btnSend.addEventListener("click", sendText);
-inputMessage.addEventListener("keydown", e=>{if(e.key==="Enter") sendText();});
-async function sendText(){
-  const text = inputMessage.value.trim(); if(!text) return;
-  await push(msgsRef,{
-    senderId:currentUser?currentUser.uid:localDeviceId,
-    name:currentUser?currentUser.displayName:"Guest",
-    type:"text",
-    text,
-    time:Date.now()
+function createMessageElement(msg) {
+  const isSent = msg.senderId === (currentUser ? currentUser.uid : localDeviceId);
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+  
+  const senderName = msg.name || (isSent ? 'Вы' : 'Гость');
+  
+  messageDiv.innerHTML = `
+    ${!isSent ? `<div class="message-sender">${senderName}</div>` : ''}
+    <div class="message-text">${msg.type === 'audio' ? '🎤 Голосовое сообщение' : escapeHtml(msg.text)}</div>
+    ${msg.type === 'audio' && msg.audioUrl ? `
+      <div class="audio-message">
+        <div class="audio-player">
+          <div class="audio-controls">
+            <button class="play-btn" data-audio="${msg.audioUrl}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="audio-info">
+            <div class="audio-wave">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+            <div class="audio-duration" data-audio="${msg.audioUrl}">...</div>
+          </div>
+        </div>
+      </div>
+    ` : ''}
+    <div class="message-time">${formatTime(msg.time)}</div>
+  `;
+  
+  return messageDiv;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Listen for new messages
+const messagesRef = ref(db, 'messages');
+onChildAdded(messagesRef, (snapshot) => {
+  const msg = snapshot.val();
+  const messageElement = createMessageElement(msg);
+  messagesContainer.appendChild(messageElement);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // Load audio duration for audio messages
+  if (msg.type === 'audio' && msg.audioUrl) {
+    loadAudioDuration(msg.audioUrl);
+  }
+  
+  // Add click handler for play buttons
+  setTimeout(() => {
+    const playBtn = messageElement.querySelector(`[data-audio="${msg.audioUrl}"]`);
+    if (playBtn) {
+      playBtn.addEventListener('click', () => toggleAudioPlayback(msg.audioUrl));
+    }
+  }, 100);
+});
+
+// Audio playback
+async function toggleAudioPlayback(audioUrl) {
+  const audioElement = activeAudios.get(audioUrl);
+  
+  if (audioElement && !audioElement.paused) {
+    audioElement.pause();
+    return;
+  }
+  
+  // Stop all other audios
+  activeAudios.forEach((audio, url) => {
+    if (url !== audioUrl) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
   });
-  inputMessage.value="";
+  
+  const audio = new Audio(audioUrl);
+  activeAudios.set(audioUrl, audio);
+  
+  audio.addEventListener('loadedmetadata', () => {
+    const durationElements = document.querySelectorAll(`[data-audio="${audioUrl}"]`);
+    durationElements.forEach(el => {
+      if (el.className === 'audio-duration') {
+        el.textContent = formatDuration(audio.duration);
+      }
+    });
+  });
+  
+  audio.addEventListener('ended', () => {
+    activeAudios.delete(audioUrl);
+  });
+  
+  try {
+    await audio.play();
+  } catch (error) {
+    console.error('Audio playback error:', error);
+  }
 }
 
-/* Voice Messages */
-btnRecord.addEventListener("click", async()=>{
-  if(!mediaRecorder || mediaRecorder.state==="inactive") {
-    await startRecording();
-  } else {
+function formatDuration(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+async function loadAudioDuration(audioUrl) {
+  try {
+    const audio = new Audio(audioUrl);
+    audio.addEventListener('loadedmetadata', () => {
+      const durationElements = document.querySelectorAll(`[data-audio="${audioUrl}"]`);
+      durationElements.forEach(el => {
+        if (el.className === 'audio-duration') {
+          el.textContent = formatDuration(audio.duration);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error loading audio duration:', error);
+  }
+}
+
+// Send text message
+btnSend.addEventListener('click', sendTextMessage);
+inputMessage.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendTextMessage();
+});
+
+async function sendTextMessage() {
+  const text = inputMessage.value.trim();
+  if (!text) return;
+  
+  try {
+    await push(messagesRef, {
+      senderId: currentUser ? currentUser.uid : localDeviceId,
+      name: currentUser ? currentUser.displayName : 'Гость',
+      type: 'text',
+      text: text,
+      time: Date.now()
+    });
+    
+    inputMessage.value = '';
+    inputMessage.focus();
+  } catch (error) {
+    console.error('Error sending message:', error);
+    connectionStatus.textContent = "Ошибка отправки сообщения";
+    connectionStatus.style.display = 'block';
+  }
+}
+
+// Voice recording
+btnRecord.addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
     stopRecording();
+  } else {
+    startRecording();
   }
 });
 
-async function startRecording(){
-  try{
-    // Останавливаем предыдущий поток, если есть
-    if(audioStream){
+async function startRecording() {
+  try {
+    if (audioStream) {
       audioStream.getTracks().forEach(track => track.stop());
     }
     
-    audioStream = await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder = new MediaRecorder(audioStream); 
-    recordedChunks=[];
+    audioStream = await navigator.mediaDevices.getUserMedia({ 
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        sampleRate: 44100
+      }
+    });
     
-    mediaRecorder.ondataavailable = e=>{ 
-      if(e.data.size>0) recordedChunks.push(e.data);
+    mediaRecorder = new MediaRecorder(audioStream, {
+      mimeType: 'audio/webm;codecs=opus'
+    });
+    
+    recordedChunks = [];
+    
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunks.push(event.data);
+      }
     };
     
-    mediaRecorder.onstop=async()=>{
-      const blob=new Blob(recordedChunks,{type:'audio/webm;codecs=opus'});
-      await uploadAudio(blob);
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
+      await uploadAudioMessage(audioBlob);
       
-      // Останавливаем треки только после загрузки
-      if(audioStream){
+      if (audioStream) {
         audioStream.getTracks().forEach(track => track.stop());
         audioStream = null;
       }
     };
     
-    mediaRecorder.start(); 
-    recStartTs=Date.now(); 
-    startRecTimer();
-    showRecorderUI(true); 
-    btnRecord.textContent="⏹️";
-    btnRecord.style.color = "#d9534f";
+    mediaRecorder.start(100); // Collect data every 100ms
+    recStartTs = Date.now();
+    startRecordingTimer();
     
-  }catch(e){
-    console.error("Ошибка записи:", e);
-    alert("Нет доступа к микрофону: "+e.message);
+    // Update UI
+    recordingUI.style.display = 'block';
+    btnRecord.classList.add('recording');
+    btnRecord.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="6" y="6" width="12" height="12" rx="2"></rect>
+      </svg>
+    `;
+    
+  } catch (error) {
+    console.error('Recording error:', error);
+    connectionStatus.textContent = "Не удалось получить доступ к микрофону";
+    connectionStatus.style.display = 'block';
+    setTimeout(() => {
+      connectionStatus.style.display = 'none';
+    }, 3000);
   }
 }
 
-function stopRecording(){ 
-  if(mediaRecorder && mediaRecorder.state==="recording"){
-    mediaRecorder.stop(); 
-    stopRecTimer(); 
-    showRecorderUI(false);
-    btnRecord.textContent="🎤";
-    btnRecord.style.color = "";
-  } 
-}
-
-function showRecorderUI(on){ 
-  recorderUI.style.display=on?"block":"none"; 
-  recTimeEl.textContent="00:00";
-}
-
-function startRecTimer(){ 
-  recTimer=setInterval(()=>{
-    const diff=Math.floor((Date.now()-recStartTs)/1000); 
-    const mm=String(Math.floor(diff/60)).padStart(2,'0'); 
-    const ss=String(diff%60).padStart(2,'0'); 
-    recTimeEl.textContent=`${mm}:${ss}`;
-  },250);
-}
-
-function stopRecTimer(){
-  if(recTimer){
-    clearInterval(recTimer); 
-    recTimer=null;
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    stopRecordingTimer();
+    
+    // Update UI
+    recordingUI.style.display = 'none';
+    btnRecord.classList.remove('recording');
+    btnRecord.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+      </svg>
+    `;
   }
 }
 
-btnCancelRec.addEventListener("click",()=>{ 
-  if(mediaRecorder && mediaRecorder.state==="recording"){ 
-    mediaRecorder.stop(); 
-    recordedChunks=[]; 
-    showRecorderUI(false); 
-    btnRecord.textContent="🎤";
-    btnRecord.style.color = "";
-    stopRecTimer(); 
+function startRecordingTimer() {
+  recTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - recStartTs) / 1000);
+    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const seconds = (elapsed % 60).toString().padStart(2, '0');
+    recordingTime.textContent = `${minutes}:${seconds}`;
     
-    // Останавливаем поток
-    if(audioStream){
+    // Auto-stop after 2 minutes
+    if (elapsed >= 120) {
+      stopRecording();
+    }
+  }, 1000);
+}
+
+function stopRecordingTimer() {
+  if (recTimer) {
+    clearInterval(recTimer);
+    recTimer = null;
+  }
+}
+
+btnCancelRec.addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    recordedChunks = [];
+    stopRecordingTimer();
+    recordingUI.style.display = 'none';
+    btnRecord.classList.remove('recording');
+    btnRecord.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+      </svg>
+    `;
+    
+    if (audioStream) {
       audioStream.getTracks().forEach(track => track.stop());
       audioStream = null;
     }
-  } 
+  }
 });
 
-btnSendRec.addEventListener("click",()=>{ 
-  stopRecording(); 
+btnSendRec.addEventListener('click', () => {
+  stopRecording();
 });
 
-async function uploadAudio(blob){
-  try{
-    const userId=currentUser?currentUser.uid:"guest";
-    const path=`audio/${userId}/${Date.now()}.webm`;
-    const storageRef=sref(storage,path);
-    await uploadBytes(storageRef,blob);
-    const url=await getDownloadURL(storageRef);
-    await push(msgsRef,{
-      senderId:currentUser?currentUser.uid:localDeviceId,
-      name:currentUser?currentUser.displayName:"Guest",
-      type:"audio",
-      audioUrl:url,
-      time:Date.now()
+async function uploadAudioMessage(audioBlob) {
+  try {
+    const userId = currentUser ? currentUser.uid : localDeviceId;
+    const timestamp = Date.now();
+    const storagePath = `audio/${userId}/${timestamp}.webm`;
+    const storageRef = sref(storage, storagePath);
+    
+    await uploadBytes(storageRef, audioBlob);
+    const audioUrl = await getDownloadURL(storageRef);
+    
+    await push(messagesRef, {
+      senderId: userId,
+      name: currentUser ? currentUser.displayName : 'Гость',
+      type: 'audio',
+      audioUrl: audioUrl,
+      time: timestamp,
+      duration: Math.floor((Date.now() - recStartTs) / 1000)
     });
-  }catch(e){
-    console.error("Ошибка отправки аудио:", e);
-    alert("Ошибка отправки аудио: "+e.message);
+    
+  } catch (error) {
+    console.error('Error uploading audio:', error);
+    connectionStatus.textContent = "Ошибка отправки голосового сообщения";
+    connectionStatus.style.display = 'block';
+    setTimeout(() => {
+      connectionStatus.style.display = 'none';
+    }, 3000);
   }
 }
+
+// Initialize
+connectionStatus.textContent = "Чат готов к использованию";
+setTimeout(() => {
+  connectionStatus.style.display = 'none';
+}, 2000);
+
+// Focus input on load
+inputMessage.focus();
 </script>
 </body>
 </html>
