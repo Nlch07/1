@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-<title>AstikMessenger — Mobile + Voice</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AstikMessenger</title>
 <style>
+  /* Root colors and theme */
   :root{
-    --bg:#e9f2fb;
+    --bg:#f1f6fb;
     --card:#ffffff;
     --accent1:#3a7bd5;
     --accent2:#00d2ff;
-    --me:#d9f7ff;
+    --me:#d0eaff;
     --text:#0b1220;
     --muted:#667085;
   }
@@ -18,107 +19,90 @@
     --bg:#071025; --card:#061226; --me:#07324b; --text:#e6eef7; --muted:#9fb0cc;
   }
 
-  html,body{height:100%;margin:0;font-family:Inter,Roboto,Arial,Helvetica,sans-serif;background:linear-gradient(180deg,var(--bg),#f7fbff);color:var(--text)}
-  /* mobile-first layout */
-  .app { max-width:640px; margin:0 auto; height:100vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 12px 40px rgba(10,20,40,0.12) }
-  /* header */
-  .header { display:flex;align-items:center;gap:10px;padding:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:white }
-  .logo { width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700 }
-  .title { font-size:18px;font-weight:700 }
-  .header .actions { margin-left:auto; display:flex; gap:8px; align-items:center }
-  .btn { background:transparent;border:none;color:inherit;font-size:18px;padding:8px;border-radius:8px;cursor:pointer }
-  /* messages area */
-  .messages { flex:1; overflow:auto;padding:12px; background: linear-gradient(180deg, rgba(255,255,255,0.6), transparent) }
-  .msg-row { display:flex; margin:8px 0; }
-  .msg { max-width:78%; padding:10px 12px; border-radius:12px; background:var(--card); box-shadow:0 6px 15px rgba(10,20,40,0.04); position:relative; }
-  .msg.me { margin-left:auto; background:var(--me) }
-  .nick { font-weight:700; font-size:13px; margin-bottom:6px }
-  .txt { white-space:pre-wrap; word-break:break-word }
-  .time { font-size:11px; color:var(--muted); margin-top:6px; text-align:right }
-  .small-muted{ font-size:12px; color:var(--muted) }
-  .image-thumb { max-width:220px; border-radius:8px; display:block; margin-top:8px }
-  audio.msg-audio { width:180px; margin-top:8px; display:block }
-  /* compose bar */
-  .compose { display:flex; gap:8px; padding:10px; border-top:1px solid rgba(0,0,0,0.06); background:var(--card); align-items:center }
-  .compose input[type="text"]{ flex:1; padding:10px 12px; border-radius:999px; border:1px solid #e6eef7; font-size:15px }
-  .compose .compose-btn { background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white;border:none;padding:10px 12px;border-radius:999px;font-size:16px;cursor:pointer }
-  .compose .icon-btn { background:transparent;border:none;font-size:20px;padding:8px;cursor:pointer }
-  /* recording UI */
-  .recorder { display:flex; gap:8px; align-items:center; padding:8px; border-radius:10px; background:rgba(58,123,213,0.06); margin:6px 0 }
-  .rec-dot { width:10px;height:10px;border-radius:50%;background:#d9534f;animation:blink 1s linear infinite }
-  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.1} }
-
-  /* responsive: large screens show sidebar */
-  @media(min-width:880px){
-    .layout { display:grid; grid-template-columns:320px 1fr; height:100% }
-    .sidebar { background:var(--card); padding:12px; border-right:1px solid rgba(0,0,0,0.04); overflow:auto }
-    .messages { padding:18px }
+  html, body{
+    margin:0; padding:0; height:100%; font-family:Inter,Roboto,sans-serif; background:var(--bg); color:var(--text);
   }
 
-  /* utility */
-  .muted { color:var(--muted) }
-  .center { text-align:center }
+  .app{
+    max-width:640px; margin:0 auto; height:100vh; display:flex; flex-direction:column; border-radius:12px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  /* Header */
+  .header{ display:flex; align-items:center; padding:12px; background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; }
+  .logo{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; background:rgba(255,255,255,0.3);}
+  .title{ font-size:18px; font-weight:700; margin-left:10px; }
+  .header .actions{ margin-left:auto; display:flex; gap:8px; }
+
+  .btn{ background:transparent; border:none; color:inherit; font-size:18px; padding:8px; border-radius:8px; cursor:pointer; }
+
+  /* Messages area */
+  .messages{ flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:6px; background:var(--bg); }
+  .msg-row{ display:flex; flex-direction:column; }
+  .msg{ max-width:75%; padding:10px 12px; border-radius:16px; background:var(--card); box-shadow:0 2px 6px rgba(0,0,0,0.04); position:relative; word-wrap: break-word; }
+  .msg.me{ margin-left:auto; background:var(--me); }
+  .nick{ font-weight:600; font-size:13px; margin-bottom:4px; color:var(--accent1);}
+  .time{ font-size:11px; color:var(--muted); margin-top:4px; text-align:right; }
+  audio.msg-audio{ width:180px; margin-top:8px; display:block; }
+  img.msg-image{ max-width:180px; border-radius:12px; margin-top:6px; }
+
+  /* Compose area */
+  .compose{ display:flex; gap:8px; padding:10px; border-top:1px solid rgba(0,0,0,0.06); background:var(--card); align-items:center; }
+  .compose input[type="text"]{ flex:1; padding:10px 14px; border-radius:999px; border:1px solid #dbe5f1; font-size:15px; }
+  .compose .compose-btn{ background:linear-gradient(90deg,var(--accent1),var(--accent2)); color:white; border:none; padding:10px 12px; border-radius:999px; font-size:16px; cursor:pointer; }
+  .compose .icon-btn{ background:transparent; border:none; font-size:20px; padding:8px; cursor:pointer; }
+
+  /* Recorder */
+  .recorder{ display:flex; gap:8px; align-items:center; padding:8px; border-radius:10px; background:rgba(58,123,213,0.1); margin:6px 0; }
+  .rec-dot{ width:10px; height:10px; border-radius:50%; background:#d9534f; animation:blink 1s linear infinite; }
+  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:0.1} }
+
+  /* small */
+  .small-muted{ font-size:12px; color:var(--muted); }
+  .center{text-align:center;}
 </style>
 </head>
 <body>
-
 <div class="app" id="app" data-theme="light">
-  <!-- header -->
+
   <div class="header">
     <div class="logo">A</div>
-    <div>
-      <div class="title">AstikMessenger</div>
-      <div class="small-muted" id="chatSub">Общий чат</div>
-    </div>
+    <div class="title">AstikMessenger</div>
     <div class="actions">
-      <button id="btnTheme" class="btn" title="Тема">🌓</button>
-      <button id="btnSignIn" class="btn" title="Войти">Войти</button>
-      <button id="btnSignOut" class="btn" title="Выйти" style="display:none">⤫</button>
+      <button id="btnTheme" class="btn">🌓</button>
+      <button id="btnSignIn" class="btn">Войти</button>
+      <button id="btnSignOut" class="btn" style="display:none">⤫</button>
     </div>
   </div>
 
-  <!-- main content (mobile-first single column) -->
-  <div style="flex:1; display:flex; flex-direction:column; min-height:0">
+  <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
     <div id="messages" class="messages"></div>
 
-    <!-- recorder preview (visible while recording) -->
-    <div id="recorderUI" style="display:none;padding:10px">
+    <div id="recorderUI" style="display:none;">
       <div class="recorder">
         <div class="rec-dot"></div>
         <div id="recTime">00:00</div>
-        <div style="margin-left:auto;display:flex;gap:8px">
-          <button id="btnCancelRec" class="icon-btn" title="Отменить">✖</button>
-          <button id="btnSendRec" class="compose-btn" title="Отправить">Отправить</button>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button id="btnCancelRec" class="icon-btn">✖</button>
+          <button id="btnSendRec" class="compose-btn">Отправить</button>
         </div>
       </div>
     </div>
 
-    <!-- compose area -->
     <div class="compose">
-      <input type="file" id="fileInput" accept="image/*" style="display:none">
-      <button id="btnAttach" class="icon-btn" title="Изображение">📷</button>
-
-      <!-- voice button + states -->
+      <input id="inputMessage" type="text" placeholder="Напишите сообщение..." autocomplete="off">
       <button id="btnRecord" class="icon-btn" title="Голосовое сообщение">🎤</button>
-
-      <input id="inputMessage" type="text" placeholder="Напишите сообщение..." autocomplete="off" />
-      <button id="btnSend" class="compose-btn" title="Отправить">➤</button>
+      <button id="btnSend" class="compose-btn">➤</button>
     </div>
   </div>
+
 </div>
 
 <script type="module">
-/* =========================
-   Mobile-first + Voice
-   Firebase-integrated
-   ========================= */
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-import { getDatabase, ref, push, onChildAdded, set, onValue, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getStorage, ref as sref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
 
-/* ---------- YOUR FIREBASE CONFIG ---------- */
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
   authDomain: "test3-88cee.firebaseapp.com",
@@ -128,7 +112,6 @@ const firebaseConfig = {
   messagingSenderId: "469479851370",
   appId: "1:469479851370:web:915e95767b012c281e1113"
 };
-/* ------------------------------------------- */
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -142,278 +125,135 @@ const btnTheme = document.getElementById("btnTheme");
 const messagesEl = document.getElementById("messages");
 const btnSend = document.getElementById("btnSend");
 const inputMessage = document.getElementById("inputMessage");
-const btnAttach = document.getElementById("btnAttach");
-const fileInput = document.getElementById("fileInput");
 const btnRecord = document.getElementById("btnRecord");
 const recorderUI = document.getElementById("recorderUI");
 const recTimeEl = document.getElementById("recTime");
 const btnCancelRec = document.getElementById("btnCancelRec");
 const btnSendRec = document.getElementById("btnSendRec");
-const chatSub = document.getElementById("chatSub");
 
-const MESSAGES = "messages";
-const TYPING = "typing";
-
-/* state */
 let currentUser = null;
 let localDeviceId = "dev_" + Math.random().toString(36).slice(2,9);
 let mediaRecorder = null;
 let recordedChunks = [];
 let recStartTs = 0;
 let recTimer = null;
-let uploadingAudioUrl = null;
 
-/* theme handling */
+/* Theme */
 let theme = localStorage.getItem("astik:theme") || "light";
 document.getElementById("app").setAttribute("data-theme", theme);
 btnTheme.addEventListener("click", ()=>{
-  theme = (theme === "light") ? "dark" : "light";
+  theme = (theme==="light")?"dark":"light";
   document.getElementById("app").setAttribute("data-theme", theme);
-  localStorage.setItem("astik:theme", theme);
+  localStorage.setItem("astik:theme",theme);
 });
 
-/* auth */
+/* Auth */
 btnSignIn.addEventListener("click", async ()=>{
   const provider = new GoogleAuthProvider();
-  try {
-    await signInWithPopup(auth, provider);
-  } catch(e){ alert("Ошибка входа: "+e.message) }
+  await signInWithPopup(auth, provider);
 });
-btnSignOut.addEventListener("click", async ()=> await signOut(auth));
+btnSignOut.addEventListener("click", ()=>signOut(auth));
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, user=>{
   currentUser = user;
-  if (user){
-    btnSignIn.style.display = "none";
-    btnSignOut.style.display = "inline-block";
-    chatSub.textContent = `Вы: ${user.displayName || user.email}`;
-    // presence etc could be added
-  } else {
-    btnSignIn.style.display = "inline-block";
-    btnSignOut.style.display = "none";
-    chatSub.textContent = "Общий чат";
-  }
+  btnSignIn.style.display = user?"none":"inline-block";
+  btnSignOut.style.display = user?"inline-block":"none";
 });
 
-/* messages listening */
+/* Messages */
 function fmtTime(ts){
-  const d = new Date(ts || Date.now());
-  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  const d = new Date(ts||Date.now());
+  return d.getHours().toString().padStart(2,'0')+":"+d.getMinutes().toString().padStart(2,'0');
 }
-
-const msgsRef = ref(db, MESSAGES);
-onChildAdded(msgsRef, snap => {
-  const id = snap.key;
+const msgsRef = ref(db, "messages");
+onChildAdded(msgsRef, snap=>{
   const msg = snap.val();
-  renderMessage(id, msg);
-  // if message not from me, mark delivered by me
-  if ((currentUser ? currentUser.uid : localDeviceId) !== msg.senderId){
-    const delRef = ref(db, `${MESSAGES}/${id}/delivered/${currentUser ? currentUser.uid : localDeviceId}`);
-    set(delRef, true);
-  }
+  renderMessage(msg);
 });
 
-onValue(msgsRef, snap => {
-  // optional: can update message statuses when changed
-});
-
-/* render */
-function renderMessage(id, msg){
-  if (!msg) return;
-  if (document.getElementById("msg_"+id)) return; // avoid dupes
-  const isMe = (msg.senderId === (currentUser ? currentUser.uid : localDeviceId));
+function renderMessage(msg){
+  const isMe = (msg.senderId === (currentUser?currentUser.uid:localDeviceId));
   const row = document.createElement("div");
-  row.id = "msg_"+id;
-  row.className = "msg-row";
-
+  row.className="msg-row";
   const bubble = document.createElement("div");
-  bubble.className = "msg" + (isMe ? " me" : "");
-  // header (nick) for others
-  if (!isMe){
-    const nick = document.createElement("div");
-    nick.className = "nick";
-    nick.textContent = msg.name || "User";
-    bubble.appendChild(nick);
+  bubble.className="msg"+(isMe?" me":"");
+  if(!isMe){ const nick=document.createElement("div"); nick.className="nick"; nick.textContent=msg.name||"User"; bubble.appendChild(nick);}
+  if(msg.type==="text"||!msg.type){
+    const p=document.createElement("div"); p.textContent=msg.text; bubble.appendChild(p);
+  } else if(msg.type==="audio"&&msg.audioUrl){
+    const audio=document.createElement("audio"); audio.controls=true; audio.src=msg.audioUrl; audio.className="msg-audio"; bubble.appendChild(audio);
   }
-
-  if (msg.type === "text" || !msg.type){
-    const p = document.createElement("div");
-    p.className = "txt";
-    p.textContent = msg.text || "";
-    bubble.appendChild(p);
-  } else if (msg.type === "image" && msg.imageUrl){
-    const img = document.createElement("img");
-    img.className = "image-thumb";
-    img.src = msg.imageUrl;
-    bubble.appendChild(img);
-  } else if (msg.type === "audio" && msg.audioUrl){
-    const audio = document.createElement("audio");
-    audio.className = "msg-audio";
-    audio.controls = true;
-    audio.src = msg.audioUrl;
-    bubble.appendChild(audio);
-  }
-
-  // time / status
-  const timeEl = document.createElement("div");
-  timeEl.className = "time";
-  timeEl.textContent = fmtTime(msg.time);
-  bubble.appendChild(timeEl);
-
-  row.appendChild(bubble);
-  messagesEl.appendChild(row);
+  const t=document.createElement("div"); t.className="time"; t.textContent=fmtTime(msg.time); bubble.appendChild(t);
+  row.appendChild(bubble); messagesEl.appendChild(row);
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* send text */
-btnSend.addEventListener("click", sendTextMessage);
-inputMessage.addEventListener("keydown", e=> { if (e.key === "Enter") sendTextMessage(); });
-
-async function sendTextMessage(){
-  const text = inputMessage.value.trim();
-  if (!text) return;
-  const payload = {
-    senderId: currentUser ? currentUser.uid : localDeviceId,
-    name: currentUser ? (currentUser.displayName || currentUser.email) : "Guest",
+/* Send Text */
+btnSend.addEventListener("click", sendText);
+inputMessage.addEventListener("keydown", e=>{if(e.key==="Enter")sendText();});
+async function sendText(){
+  const text=inputMessage.value.trim(); if(!text)return;
+  await push(msgsRef,{
+    senderId: currentUser?currentUser.uid:localDeviceId,
+    name: currentUser?currentUser.displayName:"Guest",
     text,
-    type: "text",
-    time: Date.now()
-  };
-  await push(ref(db, MESSAGES), payload);
-  inputMessage.value = "";
+    type:"text",
+    time:Date.now()
+  });
+  inputMessage.value="";
 }
 
-/* attach image */
-btnAttach.addEventListener("click", ()=> fileInput.click());
-fileInput.addEventListener("change", async e=>{
-  const f = e.target.files[0];
-  if (!f) return;
-  try {
-    const path = `images/${(currentUser?currentUser.uid:localDeviceId)}/${Date.now()}_${f.name}`;
-    const sref1 = sref(storage, path);
-    const snap = await uploadBytes(sref1, f);
-    const url = await getDownloadURL(sref1);
-    await push(ref(db, MESSAGES), {
-      senderId: currentUser ? currentUser.uid : localDeviceId,
-      name: currentUser ? (currentUser.displayName || currentUser.email) : "Guest",
-      type: "image",
-      imageUrl: url,
-      time: Date.now()
-    });
-  } catch(err){
-    alert("Ошибка загрузки: " + err.message);
-  } finally {
-    fileInput.value = "";
-  }
-});
-
-/* ===========================
-   VOICE MESSAGE: MediaRecorder
-   =========================== */
-btnRecord.addEventListener("click", async ()=>{
-  // start recording if not recording; if recording, stop
-  if (!mediaRecorder || mediaRecorder.state === "inactive"){
-    startRecording();
-  } else {
-    stopRecording(); // toggle - stop if already recording
-  }
-});
+/* Voice Messages */
+btnRecord.addEventListener("click", startStopRecording);
+function startStopRecording(){
+  if(!mediaRecorder||mediaRecorder.state==="inactive") startRecording();
+  else stopRecording();
+}
 
 async function startRecording(){
-  // request mic permission and start MediaRecorder
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    recordedChunks = [];
-    mediaRecorder.ondataavailable = e => {
-      if (e.data && e.data.size > 0) recordedChunks.push(e.data);
-    };
-    mediaRecorder.onstop = async () => {
-      // blob available
-      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-      // upload to firebase storage
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);
+    recordedChunks=[];
+    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop=async ()=>{
+      const blob=new Blob(recordedChunks,{type:'audio/webm'});
       showRecorderUI(false);
-      await uploadAudioAndSend(blob);
-      // stop tracks
-      try { stream.getTracks().forEach(t=>t.stop()); } catch(e){}
+      await uploadAudio(blob);
+      stream.getTracks().forEach(t=>t.stop());
     };
     mediaRecorder.start();
-    recStartTs = Date.now();
-    startRecTimer();
-    showRecorderUI(true);
-    btnRecord.textContent = "⏹️"; // stop icon
-  } catch(err){
-    alert("Невозможно получить доступ к микрофону: " + err.message);
-  }
+    recStartTs=Date.now(); startRecTimer();
+    showRecorderUI(true); btnRecord.textContent="⏹️";
+  } catch(e){ alert("Нет доступа к микрофону"); }
 }
 
-function stopRecording(){
-  if (mediaRecorder && mediaRecorder.state === "recording"){
-    mediaRecorder.stop();
-    stopRecTimer();
-    btnRecord.textContent = "🎤";
-  }
-}
+function stopRecording(){ if(mediaRecorder&&mediaRecorder.state==="recording"){ mediaRecorder.stop(); stopRecTimer(); btnRecord.textContent="🎤"; }}
 
-function showRecorderUI(on){
-  recorderUI.style.display = on ? "block" : "none";
-  if (!on){
-    recTimeEl.textContent = "00:00";
-  }
-}
+function showRecorderUI(on){ recorderUI.style.display=on?"block":"none"; recTimeEl.textContent="00:00"; }
+function startRecTimer(){ recTimer=setInterval(()=>{const diff=Math.floor((Date.now()-recStartTs)/1000); const mm=String(Math.floor(diff/60)).padStart(2,'0'); const ss=String(diff%60).padStart(2,'0'); recTimeEl.textContent=`${mm}:${ss}`; },250); }
+function stopRecTimer(){ clearInterval(recTimer); recTimer=null; }
 
-function startRecTimer(){
-  recTimer = setInterval(()=>{
-    const diff = Math.floor((Date.now() - recStartTs)/1000);
-    const mm = String(Math.floor(diff/60)).padStart(2,'0');
-    const ss = String(diff%60).padStart(2,'0');
-    recTimeEl.textContent = `${mm}:${ss}`;
-  }, 250);
-}
-function stopRecTimer(){ clearInterval(recTimer); recTimer = null; }
-
-/* cancel recording */
 btnCancelRec.addEventListener("click", ()=>{
-  if (mediaRecorder && mediaRecorder.state === "recording") {
-    mediaRecorder.stop();
-    // we'll not send because recordedChunks will be uploaded in onstop - so clear flag and don't send: set a flag
-    recordedChunks = []; // clears recorded data
-    showRecorderUI(false);
-    btnRecord.textContent = "🎤";
-    stopRecTimer();
-  }
+  if(mediaRecorder&&mediaRecorder.state==="recording"){ mediaRecorder.stop(); recordedChunks=[]; showRecorderUI(false); btnRecord.textContent="🎤"; stopRecTimer();}
 });
+btnSendRec.addEventListener("click", ()=>{ stopRecording(); });
 
-/* upload audio and send message */
-async function uploadAudioAndSend(blob){
-  try {
-    // simple filename + upload
-    const filename = `audio/${(currentUser?currentUser.uid:localDeviceId)}/${Date.now()}.webm`;
-    const storageRef = sref(storage, filename);
-    // show small local "uploading" message (optional)
-    const uploadSnap = await uploadBytes(storageRef, blob);
-    const url = await getDownloadURL(storageRef);
-    // send message with audioUrl
-    await push(ref(db, MESSAGES), {
-      senderId: currentUser ? currentUser.uid : localDeviceId,
-      name: currentUser ? (currentUser.displayName || currentUser.email) : "Guest",
-      type: "audio",
-      audioUrl: url,
-      time: Date.now()
+async function uploadAudio(blob){
+  try{
+    const path=`audio/${(currentUser?currentUser.uid:localDeviceId)}/${Date.now()}.webm`;
+    const sref1=sref(storage,path);
+    await uploadBytes(sref1,blob);
+    const url=await getDownloadURL(sref1);
+    await push(msgsRef,{
+      senderId:currentUser?currentUser.uid:localDeviceId,
+      name:currentUser?currentUser.displayName:"Guest",
+      type:"audio",
+      audioUrl:url,
+      time:Date.now()
     });
-  } catch(err){
-    alert("Ошибка загрузки аудио: " + err.message);
-  }
+  }catch(e){ alert("Ошибка отправки аудио"); }
 }
-
-/* small UX: allow tapping audio files to play (browser does) */
-/* optionally implement progress / waveforms later */
-
-/* final small helpers */
-window.addEventListener("beforeunload", ()=>{
-  // clear typing state
-  set(ref(db, `${TYPING}/${localDeviceId}`), "");
-});
 </script>
 </body>
 </html>
