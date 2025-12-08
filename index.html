@@ -9,6 +9,9 @@
       margin: 0;
       background: #e5ddd5;
       font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px 0;
     }
     .header {
       background: #075e54;
@@ -16,7 +19,7 @@
       padding: 15px;
       font-size: 20px;
     }
-    #messages {
+    #messages { padding: 10px; height: calc(100vh - 200px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; } {
       padding: 10px;
       height: calc(100vh - 150px);
       overflow-y: auto;
@@ -68,12 +71,13 @@
   </style>
 </head>
 <body>
-  <div class="header">Messenger</div>
-  <div id="messages"></div>
+  <div id="appContainer" style="width: 95%; max-width: 480px; background: #e5ddd5; border-radius: 15px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+    <div class="header"><span id="appTitle" style="margin-left:10px;">Messenger</span></div>
+    <div id="messages""></div>
 
-  <div class="input-bar">
-    <input id="nameInput" placeholder="Ваше имя" />
-    <input id="textInput" placeholder="Сообщение..." />
+  <div class="input-bar" style="max-width: 480px; margin: 0 auto; left: 50%; transform: translateX(-50%); width: 90%; border-radius: 15px;">
+    <input id="nameInput" placeholder="Ваше имя" style="max-width: 120px;" />
+    <input id="textInput" placeholder="Сообщение..." style="flex: 1;" />
     <button id="sendBtn">➤</button>
   </div>
 
@@ -124,4 +128,3 @@
   </script>
 </body>
 </html>
-
