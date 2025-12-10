@@ -1,390 +1,214 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Вотсвой Вотсап</title>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-
-  /* Главное — страница не скроллится никогда */
-  html, body {
-    height: 100%;
-    overflow: hidden;
-    background: #000;
-    font-family: system-ui, -apple-system, sans-serif;
-  }
-
-  body {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 20px 10px max(40px, env(safe-area-inset-bottom)) 10px;
-  }
-
-  /* Окно приложения — всегда одна высота */
-  #app {
-    width: 100%;
-    max-width: 460px;
-    height: 88vh;
-    background: #0b141a;
-    border-radius: 30px 30px 0 0;
-    overflow: hidden;
-    box-shadow: 0 -20px 60px rgba(0,0,0,0.9);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
-
-  /* Полоска сверху как в приложениях */
-  #app::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 46px;
-    height: 5px;
-    background: #555;
-    border-radius: 10px;
-    z-index: 10;
-  }
-
-  header {
-    background: #075e54;
-    padding: 16px;
-    color: white;
-    font-size: 20px;
-    font-weight: 500;
-    text-align: center;
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  .change-name {
-    position: absolute;
-    right: 16px;
-    font-size: 24px;
-    cursor: pointer;
-    opacity: 0.8;
-  }
-
-  /* Список чатов и сообщения — только они скроллятся */
-  #chat-list,
-  #chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  #chat-list { background: #111; padding: 10px 0; }
-  #chat-messages { background: #0b141a; padding: 10px 8px; display: flex; flex-direction: column; gap: 9px; }
-
-  .chat-item {
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    cursor: pointer;
-    position: relative;
-  }
-  .chat-item:active { background: #1e2a33; }
-
-  .avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #25d366;
-    color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  .info { flex: 1; }
-  .chat-name { font-size: 18px; font-weight: 500; }
-  .last-msg { font-size: 14.5px; color: #bbb; margin-top: 4px; }
-
-  .unread-badge {
-    background: #25d366;
-    color: black;
-    padding: 4px 9px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    min-width: 20px;
-    text-align: center;
-  }
-
-  /* Экран чата */
-  #chat-screen {
-    display: none;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  #chat-header {
-    background: #075e54;
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    color: white;
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  #chat-header .back {
-    position: absolute;
-    left: 12px;
-    top: 10px;
-    font-size: 28px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-  }
-
-  .message {
-    max-width: 76%;
-    padding: 9px 14px;
-    border-radius: 18px;
-    line-height: 1.4;
-  }
-  .sent { align-self: flex-end; background: #005c4b; color: white; border-bottom-right-radius: 4px; }
-  .received { align-self: flex-start; background: #262d31; color: white; border-bottom-left-radius: 4px; }
-  .msg-text { margin-bottom: 4px; }
-  .msg-time { font-size: 11px; opacity: 0.7; text-align: right; }
-
-  /* Панель ввода — всегда внизу и видна */
-  .input-bar {
-    background: #111;
-    padding: 12px 16px;
-    padding-bottom: max(28px, env(safe-area-inset-bottom));
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-
-  #msg-input {
-    flex: 1;
-    padding: 13px 18px;
-    background: #222;
-    border: none;
-    border-radius: 30px;
-    color: white;
-    font-size: 16.5px;
-  }
-
-  #send-btn {
-    width: 48px;
-    height: 48px;
-    background: #25d366;
-    border: none;
-    border-radius: 50%;
-    color: black;
-    font-size: 22px;
-  }
-
-  /* Экран приветствия */
-  #welcome {
-    background: linear-gradient(135deg,#128c7e,#25d366);
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-  }
-  #welcome h1 { font-size: 38px; color: white; margin-bottom: 20px; }
-  #welcome input { width: 88%; padding: 19px; border: none; border-radius: 18px; font-size: 18px; text-align: center; margin: 15px 0; }
-  #welcome button { padding: 17px 60px; background: white; color: #128c7e; border-radius: 30px; font-size: 19px; font-weight: bold; border: none; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Astik Chat</title>
+  <meta name="theme-color" content="#00ff9d">
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --astik: #00ff9d;
+      --bg: #0a0a0a;
+      --card: #111;
+      --text: #e0e0e0;
+      --input: #1a1a1a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+    header { background:var(--astik); color:#000; padding:18px; text-align:center; font-weight:bold; font-size:20px; position:relative; }
+    header i { position:absolute; left:16px; top:18px; font-size:22px; cursor:pointer; }
+    main { flex:1; overflow-y:auto; padding:10px; }
+    .card { background:var(--card); border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:0 2px 10px rgba(0,255,157,0.1); }
+    .chat-item { display:flex; align-items:center; padding:12px 0; cursor:pointer; border-bottom:1px solid #222; }
+    .chat-item:last-child { border:none; }
+    .chat-item i { color:var(--astik); margin-right:16px; font-size:20px; }
+    .chat-name { font-weight:600; }
+    .chat-preview { font-size:13px; color:#888; margin-top:4px; }
+    .input-group { display:flex; gap:10px; margin-top:10px; }
+    input, button { padding:14px; border:none; border-radius:50px; font-size:16px; }
+    input { flex:1; background:var(--input); color:white; }
+    button { background:var(--astik); color:#000; width:56px; cursor:pointer; font-size:20px; }
+    .messages { padding:10px 0; max-height:70vh; overflow-y:auto; }
+    .msg { max-width:80%; margin:8px 0; padding:10px 14px; border-radius:18px; position:relative; }
+    .me { background:var(--astik); color:#000; align-self:flex-end; border-bottom-right-radius:4px; margin-left:auto; }
+    .other { background:#222; align-self:flex-start; border-bottom-left-radius:4px; }
+    .time { font-size:11px; opacity:0.7; margin-top:4px; text-align:right; }
+    .create-btn { background:var(--astik); color:#000; text-align:center; padding:18px; border-radius:12px; font-weight:bold; cursor:pointer; margin:20px 10px 10px; }
+    .copy-notify { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--astik); color:#000; padding:12px 24px; border-radius:50px; z-index:1000; font-weight:bold; }
+    .hidden { display:none; }
+    #chat-view { display:none; flex-direction:column; height:100vh; }
+    #messages { flex:1; overflow-y:auto; padding:10px; }
+    #input-area { padding:10px; background:var(--bg); border-top:1px solid #222; }
+  </style>
 </head>
 <body>
 
-<div id="app">
-  <!-- Приветствие -->
-  <div id="welcome">
-    <h1>свой Вотсап</h1>
-    <p style="color:white;font-size:19px;margin-bottom:25px">Введи своё имя</p>
-    <input type="text" id="nameInput" placeholder="Твоё имя" maxlength="20">
-    <button onclick="startApp()">Войти</button>
+  <!-- Главный экран со списком чатов -->
+  <div id="chat-list-view">
+    <header>
+      <div>Astik Chat</div>
+    </header>
+    <main>
+      <div class="card">
+        <div class="chat-item" onclick="openChat('public','Общий чат')">
+          <i class="fas fa-users"></i>
+          <div>
+            <div class="chat-name">Общий чат</div>
+            <div class="chat-preview">Нажми, чтобы войти</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="private-chats-list"></div>
+
+      <div class="create-btn" onclick="createPrivateChat()">
+        <i class="fas fa-plus"></i> Создать личную переписку
+      </div>
+    </main>
   </div>
 
-  <!-- Список чатов -->
-  <div id="main" style="display:none;height:100%;display:flex;flex-direction:column">
+  <!-- Экран конкретного чата -->
+  <div id="chat-view">
     <header>
-      Мои чаты
-      <span class="change-name" onclick="changeName()">Edit</span>
+      <i class="fas fa-arrow-left" onclick="backToList()"></i>
+      <div id="chat-title">Чат</div>
     </header>
-    <div id="chat-list">
-      <div class="chat-item" onclick="openPublicChat()">
-        <div class="avatar">G</div>
-        <div class="info">
-          <div class="chat-name">Общий чат</div>
-          <div class="last-msg">Нажми чтобы войти</div>
-        </div>
+    <div id="messages"></div>
+    <div id="input-area">
+      <div class="input-group">
+        <input type="text" id="msg-input" placeholder="Сообщение..." maxlength="1000"/>
+        <button onclick="sendMessage()">Send</button>
       </div>
     </div>
   </div>
 
-  <!-- Один чат -->
-  <div id="chat-screen" style="height:100%">
-    <div id="chat-header">
-      <button class="back" onclick="backToList()">Back</button>
-      <div class="avatar" id="chat-avatar">A</div>
-      <div class="info"><div id="chat-title">Чат</div></div>
-    </div>
-    <div id="chat-messages"></div>
-    <div class="input-bar">
-      <input type="text" id="msg-input" placeholder="Сообщение">
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
-</div>
-
 <script>
+// === ТВОЙ FIREBASE (уже вставлен) ===
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
   authDomain: "test3-88cee.firebaseapp.com",
   databaseURL: "https://test3-88cee-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "test3-88cee",
-  storageBucket: "test3-88cee.firebasestorage.app",
+  storageBucket: "test3-88cee.appspot.com",
   messagingSenderId: "469479851370",
   appId: "1:469479851370:web:915e95767b012c281e1113"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let myName = localStorage.getItem('myName') || '';
-let currentPath = '';
-let currentChatTitle = '';
+let myName = localStorage.getItem('astik_nick') || '';
+if (!myName) {
+  myName = prompt("Введи свой ник:", "Гость" + Math.floor(Math.random()*9999)) || "Гость";
+  localStorage.setItem('astik_nick', myName.trim());
+  myName = myName.trim();
+}
+
 let currentChatId = null;
 
-function startApp() {
-  myName = document.getElementById('nameInput').value.trim() || 'Гость';
-  if (!myName) return alert('Введи имя!');
-  localStorage.setItem('myName', myName);
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('main').style.display = 'flex';
-  loadChatList();
-}
+// Создать новую личку
+function createPrivateChat() {
+  const chatId = Date.now().toString(36) + Math.random().toString(36).substr(2,5);
+  const link = location.origin + location.pathname + "?room=" + chatId;
 
-function changeName() {
-  const n = prompt('Новое имя:', myName);
-  if (n && n.trim() && n.trim() !== myName) {
-    myName = n.trim();
-    localStorage.setItem('myName', myName);
-    alert('Имя изменено!');
-    loadChatList();
-  }
-}
-
-function loadChatList() {
-  const list = document.getElementById('chat-list');
-  list.innerHTML = `<div class="chat-item" onclick="openPublicChat()">
-    <div class="avatar">G</div>
-    <div class="info"><div class="chat-name">Общий чат</div><div class="last-msg">Все пишут сюда</div></div>
-  </div>`;
-
-  db.ref('private_chats').orderByChild('lastTime').on('child_added', snap => {
-    const id = snap.key;
-    const data = snap.val();
-    const friend = id.split('_').find(u => u.toLowerCase() !== myName.toLowerCase());
-    if (!friend) return;
-
-    const unread = (data.unread && data.unread[myName.toLowerCase()]) || 0;
-
-    const item = document.createElement('div');
-    item.className = 'chat-item';
-    item.onclick = () => openPrivateChat(friend);
-    item.innerHTML = `
-      <div class="avatar">${friend[0].toUpperCase()}</div>
-      <div class="info">
-        <div class="chat-name">${friend}</div>
-        <div class="last-msg">${(data.lastMsg||'Начните чат').substr(0,36)}${(data.lastMsg||'').length>36?'...':''}</div>
-      </div>
-      ${unread>0 ? `<div class="unread-badge">${unread}</div>` : ''}
-    `;
-    list.appendChild(item);
+  db.ref('private_chats/' + chatId).set({
+    createdBy: myName,
+    createdAt: Date.now(),
+    title: "Личная переписка"
   });
+
+  navigator.clipboard.writeText(link);
+  const notif = document.createElement('div');
+  notif.className = 'copy-notify';
+  notif.textContent = 'Ссылка скопирована!';
+  document.body.appendChild(notif);
+  setTimeout(() => notif.remove(), 2000);
+
+  alert("Ссылка на личную переписку скопирована!\n\n" + link);
+  addPrivateChatToList(chatId, "Новый собеседник");
 }
 
-function openPublicChat() {
-  currentPath = 'public_messages';
-  currentChatTitle = 'Общий чат';
-  currentChatId = null;
-  openChatScreen();
-}
-
-function openPrivateChat(friend) {
-  const id = [myName, friend].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())).join('_');
-  currentPath = `private_chats/${id}/messages`;
-  currentChatTitle = friend;
+// Открыть чат
+function openChat(id, title) {
   currentChatId = id;
+  document.getElementById('chat-list-view').classList.add('hidden');
+  document.getElementById('chat-view').style.display = 'flex';
+  document.getElementById('chat-title').textContent = title;
+  document.getElementById('messages').innerHTML = '';
 
-  // Сбрасываем непрочитанные
-  db.ref(`private_chats/${id}/unread/${myName.toLowerCase()}`).remove();
-
-  openChatScreen();
-}
-
-function openChatScreen() {
-  document.getElementById('main').style.display = 'none';
-  document.getElementById('chat-screen').style.display = 'flex';
-  document.getElementById('chat-title').textContent = currentChatTitle;
-  document.getElementById('chat-avatar').textContent = currentChatTitle[0].toUpperCase();
-  document.getElementById('chat-messages').innerHTML = '';
-
-  db.ref(currentPath).orderByChild('time').limitToLast(300).on('child_added', s => {
-    const m = s.val();
-    const div = document.createElement('div');
-    div.className = `message ${m.name===myName ? 'sent' : 'received'}`;
-    div.innerHTML = `<div class="msg-text">${m.text}</div><div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>`;
-    document.getElementById('chat-messages').appendChild(div);
-    div.scrollIntoView({behavior:'smooth'});
+  const ref = db.ref((id === 'public' ? 'public_chat' : 'private_chats/' + id) + '/messages').limitToLast(50);
+  ref.on('child_added', snap => {
+    const m = snap.val();
+    addMessage(m.text, m.name, m.time);
   });
 }
 
-document.getElementById('send-btn').onclick = () => {
-  const text = document.getElementById('msg-input').value.trim();
-  if (!text) return;
-  const msg = {name: myName, text, time: Date.now()};
-  db.ref(currentPath).push(msg);
+function addMessage(text, name, time) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (name === myName ? 'me' : 'other');
+  div.innerHTML = `${text}<div class="time">${new Date(time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>`;
+  document.getElementById('messages').appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth' });
+}
 
-  if (currentChatId) {
-    const friend = currentChatId.split('_').find(u => u.toLowerCase() !== myName.toLowerCase());
-    db.ref('private_chats/'+currentChatId).update({
-      lastMsg: text.length>40 ? text.substr(0,37)+'...' : text,
-      lastTime: Date.now(),
-      [`unread/${friend.toLowerCase()}`]: firebase.database.ServerValue.increment(1)
-    });
-  }
+function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || !currentChatId) return;
 
-  document.getElementById('msg-input').value = '';
-};
+  const path = currentChatId === 'public' ? 'public_chat' : 'private_chats/' + currentChatId;
+  db.ref(path + '/messages').push({
+    name: myName,
+    text: text,
+    time: Date.now()
+  });
+  input.value = '';
+}
 
 function backToList() {
-  document.getElementById('chat-screen').style.display = 'none';
-  document.getElementById('main').style.display = 'flex';
-  setTimeout(loadChatList, 200);
+  document.getElementById('chat-view').style.display = 'none';
+  document.getElementById('chat-list-view').classList.remove('hidden');
 }
 
-// Автовход
-if (localStorage.getItem('myName')) {
-  myName = localStorage.getItem('myName');
-  document.getElementById('nameInput').value = myName;
-  startApp();
+// Проверка ?room= в ссылке
+const params = new URLSearchParams(location.search);
+const room = params.get('room');
+if (room) {
+  openChat(room, "Личная переписка");
+  history.replaceState(null, null, location.pathname);
 }
+
+// Загрузка твоих личек
+db.ref('private_chats').on('child_added', snap => {
+  const chat = snap.val();
+  if (chat.createdBy === myName) {
+    addPrivateChatToList(snap.key, chat.title || "Личка");
+  }
+});
+
+function addPrivateChatToList(id, title) {
+  if (document.getElementById('priv-' + id)) return;
+  const container = document.getElementById('private-chats-list');
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `<div class="chat-item" onclick="openChat('${id}','${title}')">
+    <i class="fas fa-lock"></i>
+    <div>
+      <div class="chat-name">${title}</div>
+      <div class="chat-preview">Личная переписка</div>
+    </div>
+  </div>`;
+  div.id = 'priv-' + id;
+  container.appendChild(div);
+}
+
+// Enter = отправить
+document.getElementById('msg-input')?.addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
+});
 </script>
 </body>
 </html>
