@@ -1,11 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Личный чат вдвоём</title>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background:#000; color:#fff; height:100vh; display:flex; flex-direction:column; }
+    .screen { display:none; padding:20px; text-align:center; }
+    .active { display:flex !important; flex-direction:column; height:100%; }
+    h1 { font-size:24px; margin-bottom:20px; }
+    input { 
+      width:100%; padding:16px; margin:10px 0; background:#222; border:none; border-radius:16px; 
+      color:white; font-size:17px; text-align:center; border-radius:16px;
+    }
+    button { 
+      padding:16px; background:#0d8bff; border:none; color:white; font-size:17px; 
+      font-weight:bold; border-radius:16px; margin-top:10px; cursor:pointer;
+    }
+    #chat { display:none; flex-direction:column; }
+    #header { padding:15px; background:#111; text-align:center; font-size:18px; }
+    #messages { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:10px; }
+    .msg { max-width:78%; padding:12px 16px; border-radius:20px; line-height:1.4; word-wrap:break-word; }
+    .my { align-self:flex-end; background:#0d8bff; border-bottom-right-radius:4px; }
+    .other { align-self:flex-start; background:#333; border-bottom-left-radius:4px; }
+    .name { font-size:13px; opacity:0.8; margin-bottom:5px; font-weight:600; }
+    #input-bar { padding:12px; background:#111; display:flex; gap:10px; }
+    #message { flex:1; padding:14px 18px; background:#222; color:white; border:none; border-radius:30px; font-size:17px; }
+    #send { width:52px; height:52px; background:#0d8bff; border:none; border-radius:50%; font-size:24px; }
+  </style>
 </head>
 <body>
-  1
+
+  <!-- Экран ввода имён -->
+  <div id="welcome" class="screen active">
+    <h1>Чат вдвоём</h1>
+    <p>Введи своё имя и имя человека, с кем хочешь писать</p>
+    <input type="text" id="myName" placeholder="Твоё имя" maxlength="20">
+    <input type="text" id="friendName" placeholder="Имя друга" maxlength="20">
+    <button onclick="startChat()">Начать переписку</button>
+  </div>
+
+  <!-- Чат -->
+  <div id="chat">
+    <div id="header">Чат с <span id="friendDisplay"></span></div>
+    <div id="messages"></div>
+    <div id="input-bar">
+      <input type="text" id="message" placeholder="Напиши сообщение..." maxlength="500" autocomplete="off">
+      <button id="send">Send</button>
+    </div>
+  </div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
+  authDomain: "test3-88cee.firebaseapp.com",
+  databaseURL: "https://test3-88cee-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "test3-88cee",
+  storageBucket: "test3-88cee.firebasestorage.app",
+  messagingSenderId: "469479851370",
+  appId: "1:469479851370:web:915e95767b012c281e1113"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let myName = '';
+let friendName = '';
+let chatId = '';
+
+// Создаём уникальный ID чата из двух имён (всегда в одном порядке)
+function getChatId(name1, name2) {
+  const names = [name1.toLowerCase().trim(), name2.toLowerCase().trim()];
+  names.sort();
+  return names.join('_');
+}
+
+function startChat() {
+  myName = document.getElementById('myName').value.trim();
+  friendName = document.getElementById('friendName').value.trim();
+
+  if (!myName || !friendName) {
+    alert('Введи оба имени!');
+    return;
+  }
+  if (myName === friendName) {
+    alert('Имя друга не может совпадать с твоим');
+    return;
+  }
+
+  chatId = getChatId(myName, friendName);
+
+  // Сохраняем в localStorage, чтобы при перезагрузке не вводить заново
+  localStorage.setItem('myName', myName);
+  localStorage.setItem('friendName', friendName);
+
+  document.getElementById('welcome').classList.remove('active');
+  document.getElementById('chat').style.display = 'flex';
+  document.getElementById('friendDisplay').textContent = friendName;
+
+  loadMessages();
+}
+
+// Автозаполнение при открытии страницы
+window.onload = () => {
+  const savedMy = localStorage.getItem('myName');
+  const savedFriend = localStorage.getItem('friendName');
+  if (savedMy && savedFriend) {
+    document.getElementById('myName').value = savedMy;
+    document.getElementById('friendName').value = savedFriend;
+    // Можно сразу войти: startChat();
+  }
+};
+
+// Загрузка сообщений
+function loadMessages() {
+  const messagesRef = db.ref('personal_chats/' + chatId + '/messages');
+  
+  messagesRef.orderByChild('time').limitToLast(100).on('child_added', (snap) => {
+    const msg = snap.val();
+    addMessageToScreen(msg);
+  });
+}
+
+// Отправка сообщения
+document.getElementById('send').onclick = () => {
+  const text = document.getElementById('message').value.trim();
+  if (!text) return;
+
+  const messagesRef = db.ref('personal_chats/' + chatId + '/messages');
+  messagesRef.push({
+    name: myName,
+    text: text,
+    time: Date.now()
+  });
+
+  document.getElementById('message').value = '';
+  document.getElementById('message').focus();
+};
+
+// Enter на клавиатуре = отправить
+document.getElementById('message').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('send').click();
+});
+
+// Отображение сообщения
+function addMessageToScreen(msg) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (msg.name === myName ? 'my' : 'other');
+
+  const nameSpan = document.createElement('div');
+  nameSpan.className = 'name';
+  nameSpan.textContent = msg.name === myName ? 'Вы' : friendName;
+
+  const textDiv = document.createElement('div');
+  textDiv.textContent = msg.text;
+
+  div.appendChild(nameSpan);
+  div.appendChild(textDiv);
+  document.getElementById('messages').appendChild(div);
+
+  // Автоскролл
+  const messagesDiv = document.getElementById('messages');
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+</script>
 </body>
 </html>
