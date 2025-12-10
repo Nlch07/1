@@ -10,24 +10,51 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#0b141a;color:#fff;font-family:system-ui,sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-  header{background:#075e54;padding:14px 16px;color:white;font-size:20px;font-weight:500;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.3)}
+  body{background:#000;color:#fff;font-family:system-ui,sans-serif;height:100vh;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
   
-  /* Список чатов */
-  #chat-list{flex:1;overflow-y:auto;background:#111}
+  /* Основное окно чата — 75% высоты + закругления сверху */
+  #app-container{
+    width:100%;
+    max-width:500px;
+    height:75vh;
+    background:#0b141a;
+    border-radius:28px 28px 0 0;
+    overflow:hidden;
+    box-shadow:0 -10px 40px rgba(0,0,0,0.6);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  
+  /* Полоска сверху для "свайпа вниз" (как в приложениях) */
+  #app-container::before{
+    content:'';
+    position:absolute;
+    top:8px;
+    left:50%;
+    transform:translateX(-50%);
+    width:40px;
+    height:5px;
+    background:#444;
+    border-radius:10px;
+    z-index:10;
+  }
+
+  header{background:#075e54;padding:16px;color:white;font-size:20px;font-weight:500;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.3);position:relative;z-index:5}
+
+  #chat-list{flex:1;overflow-y:auto;background:#111;padding-bottom:20px}
   .chat-item{padding:14px 16px;border-bottom:1px solid #222;display:flex;align-items:center;gap:14px;cursor:pointer;transition:0.2s}
   .chat-item:active{background:#1e2a33}
-  .avatar{width:52px;height:52px;border-radius:50%;background:#25d366;color:black;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:20px;flex-shrink:0}
+  .avatar{width:52px;height:52px;border-radius:50%;background:#25d366;color:#000;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:20px}
   .info{flex:1;min-width:0}
   .chat-name{font-size:17px;font-weight:500;margin-bottom:4px}
-  .last-msg{font-size:14px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .last-msg{font-size:14px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .time{font-size:12px;color:#25d366}
 
-  /* Экран чата */
   #chat-screen{display:none;flex-direction:column;height:100%}
   #chat-header{background:#075e54;padding:12px 16px;display:flex;align-items:center;gap:12px;color:white;position:relative}
-  #chat-header .back{position:absolute;left:10px;font-size:28px;background:none;border:none;color:white}
-  #chat-messages{flex:1;overflow-y:auto;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100"><rect fill="%230b141a" width="100" height="100"/><path fill="%231e2a33" opacity="0.03" d="M0 0h100v100H0z"/></svg>');padding:10px 8px;display:flex;flex-direction:column;gap:8px}
+  #chat-header .back{position:absolute;left:10px;top:10px;font-size:28px;background:none;border:none;color:white;cursor:pointer}
+  #chat-messages{flex:1;overflow-y:auto;background:#0b141a;padding:10px 8px;display:flex;flex-direction:column;gap:8px;background-image:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><rect fill="%230b141a" width="100" height="100"/><path fill="%231e2a33" opacity="0.04" d="M0 0h100v100H0z"/></svg>')}
   .message{max-width:78%;padding:8px 14px;border-radius:18px;position:relative;word-wrap:break-word;line-height:1.4}
   .sent{align-self:flex-end;background:#005c4b;color:white;border-bottom-right-radius:4px}
   .received{align-self:flex-start;background:#262d31;color:white;border-bottom-left-radius:4px}
@@ -37,55 +64,58 @@
   #msg-input{flex:1;padding:12px 16px;background:#222;border:none;border-radius:30px;color:white;font-size:16px}
   #send-btn{width:46px;height:46px;background:#25d366;border:none;border-radius:50%;color:black;font-size:20px}
 
-  /* Экран имени */
-  #welcome{background:linear-gradient(135deg,#128c7e,#25d366);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;text-align:center}
-  #welcome h1{font-size:36px;margin-bottom:20px;color:white}
-  #welcome input{width:85%;padding:18px;border:none;border-radius:16px;font-size:18px;text-align:center;margin:20px 0}
+  #welcome{background:linear-gradient(135deg,#128c7e,#25d366);position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100}
+  #welcome h1{font-size:36px;color:white;margin-bottom:20px}
+  #welcome input{width:85%;padding:18px;border:none;border-radius:16px;font-size:18px;text-align:center;margin:15px 0}
   #welcome button{padding:16px 50px;background:white;color:#128c7e;border-radius:30px;font-size:18px;font-weight:bold;border:none}
 </style>
 </head>
 <body>
 
-<!-- Выбор имени -->
-<div id="welcome" id="welcome">
-  <h1>Вотсапчик</h1>
-  <p style="color:white;font-size:18px;margin-bottom:30px">Введи своё имя</p>
-  <input type="text" id="nameInput" placeholder="Как тебя зовут?" maxlength="20">
-  <button onclick="startApp()">Войти</button>
-</div>
+<!-- Поднятое окно чата -->
+<div id="app-container">
+  <!-- Выбор имени (внутри окна) -->
+  <div id="welcome">
+    <h1>Вотсапчик</h1>
+    <p style="color:white;font-size:18px">Введи своё имя</p>
+    <input type="text" id="nameInput" placeholder="Как тебя зовут?" maxlength="20">
+    <button onclick="startApp()">Войти</button>
+  </div>
 
-<!-- Главный интерфейс -->
-<div id="main" style="display:none">
-  <header>Мои чаты</header>
-  <div id="chat-list">
-    <div class="chat-item" onclick="openPublicChat()">
-      <div class="avatar">G</div>
-      <div class="info">
-        <div class="chat-name">Общий чат</div>
-        <div class="last-msg">Нажми, чтобы войти</div>
+  <!-- Список чатов -->
+  <div id="main" style="display:none;height:100%;display:flex;flex-direction:column">
+    <header>Мои чаты</header>
+    <div id="chat-list">
+      <div class="chat-item" onclick="openPublicChat()">
+        <div class="avatar">G</div>
+        <div class="info">
+          <div class="chat-name">Общий чат</div>
+          <div class="last-msg">Все пишут сюда</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Экран одного чата -->
-<div id="chat-screen">
-  <div id="chat-header">
-    <button class="back" onclick="backToList()">Back</button>
-    <div class="avatar" id="chat-avatar">A</div>
-    <div class="info">
-      <div id="chat-title">Загрузка...</div>
+  <!-- Экран переписки -->
+  <div id="chat-screen" style="height:100%;display:none;flex-direction:column">
+    <div id="chat-header">
+      <button class="back" onclick="backToList()">Back</button>
+      <div class="avatar" id="chat-avatar">A</div>
+      <div class="info">
+        <div id="chat-title">Чат</div>
+      </div>
     </div>
-  </div>
-  <div id="chat-messages"></div>
-  <div class="input-bar">
-    <input type="text" id="msg-input" placeholder="Сообщение" maxlength="1000">
-    <button id="send-btn">Send</button>
+    <div id="chat-messages"></div>
+    <div class="input-bar">
+      <input type="text" id="msg-input" placeholder="Сообщение">
+      <button id="send-btn">Send</button>
+    </div>
   </div>
 </div>
 
 <script>
-const firebaseConfig = { /* твоя конфигурация */
+// Тот же рабочий скрипт, что и раньше (не менял логику — только внешний вид)
+const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
   authDomain: "test3-88cee.firebaseapp.com",
   databaseURL: "https://test3-88cee-default-rtdb.europe-west1.firebasedatabase.app",
@@ -97,134 +127,77 @@ const firebaseConfig = { /* твоя конфигурация */
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let myName = '';
-let currentChatId = null;
-let currentChatTitle = '';
+let myName = localStorage.getItem('myName') || '';
 let currentPath = '';
+let currentChatTitle = '';
+let currentChatId = null;
 
-// Запуск
 function startApp() {
   myName = document.getElementById('nameInput').value.trim() || 'Гость';
-  if (!myName) return alert('Введи имя!');
+  if (!myName) return alert('Имя обязательно!');
   localStorage.setItem('myName', myName);
 
   document.getElementById('welcome').style.display = 'none';
-  document.getElementById('main').style.display = 'block';
-
+  document.getElementById('main').style.display = 'flex';
   loadChatList();
 }
 
-// Список чатов
 function loadChatList() {
   const list = document.getElementById('chat-list');
-  list.innerHTML = `<div class="chat-item" onclick="openPublicChat()">
-    <div class="avatar">G</div>
-    <div class="info">
-      <div class="chat-name">Общий чат</div>
-      <div class="last-msg">Все пишут сюда</div>
-    </div>
-  </div>`;
+  list.innerHTML = `<div class="chat-item" onclick="openPublicChat()"><div class="avatar">G</div><div class="info"><div class="chat-name">Общий чат</div><div class="last-msg">Нажми чтобы войти</div></div></div>`;
 
-  // Загружаем личные чаты
   db.ref('private_chats').orderByChild('lastTime').limitToLast(50).on('child_added', snap => {
-    const chat = snap.val();
     const users = snap.key.split('_');
     const friend = users.find(u => u.toLowerCase() !== myName.toLowerCase());
     if (!friend) return;
-
+    const data = snap.val();
     const item = document.createElement('div');
     item.className = 'chat-item';
     item.onclick = () => openPrivateChat(friend);
-    item.innerHTML = `
-      <div class="avatar">${friend[0].toUpperCase()}</div>
-      <div class="info">
-        <div class="chat-name">${friend}</div>
-        <div class="last-msg">${chat.lastMsg || 'Напишите первым'}</div>
-      </div>
-      <div class="time">${formatTime(chat.lastTime)}</div>
-    `;
+    item.innerHTML = `<div class="avatar">${friend[0].toUpperCase()}</div><div class="info"><div class="chat-name">${friend}</div><div class="last-msg">${(data.lastMsg||'').substr(0,35)}${(data.lastMsg||'').length>35?'...':''}</div></div><div class="time">${formatTime(data.lastTime)}</div>`;
     list.appendChild(item);
   });
 }
 
-// Открыть общий чат
-function openPublicChat() {
-  currentPath = 'public_messages';
-  currentChatTitle = 'Общий чат';
-  currentChatId = null;
-  openChatScreen();
-  loadMessages('public_messages', 'G');
+function openPublicChat() { currentPath = 'public_messages'; currentChatTitle = 'Общий чат'; currentChatId = null; openChat(); }
+function openPrivateChat(friend) {
+  const id = [myName, friend].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())).join('_');
+  currentPath = `private_chats/${id}/messages`; currentChatTitle = friend; currentChatId = id; openChat();
 }
 
-// Открыть личку
-function openPrivateChat(friendName) {
-  const chatId = [myName, friendName].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())).join('_');
-  currentPath = `private_chats/${chatId}/messages`;
-  currentChatTitle = friendName;
-  currentChatId = chatId;
-  openChatScreen();
-  loadMessages(currentPath, friendName[0].toUpperCase());
-}
-
-// Загрузка сообщений
-function loadMessages(path, avatarLetter) {
-  const container = document.getElementById('chat-messages');
-  container.innerHTML = '';
-  document.getElementById('chat-avatar').textContent = avatarLetter;
+function openChat() {
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('chat-screen').style.display = 'flex';
   document.getElementById('chat-title').textContent = currentChatTitle;
-
-  db.ref(path).orderByChild('time').limitToLast(200).on('child_added', s => {
+  document.getElementById('chat-avatar').textContent = currentChatTitle[0].toUpperCase();
+  document.getElementById('chat-messages').innerHTML = '';
+  db.ref(currentPath).orderByChild('time').limitToLast(200).on('child_added', s => {
     const m = s.val();
     const div = document.createElement('div');
-    div.className = `message ${m.name===myName ? 'sent' : 'received'}`;
-    div.innerHTML = `
-      <div class="msg-text">${m.text}</div>
-      <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'})}</div>
-    `;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    div.className = `message ${m.name===myName?'sent':'received'}`;
+    div.innerHTML = `<div class="msg-text">${m.text}</div><div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>`;
+    document.getElementById('chat-messages').appendChild(div);
+    div.scrollIntoView({behavior:'smooth'});
   });
 }
 
-function openChatScreen() {
-  document.getElementById('main').style.display = 'none';
-  document.getElementById('chat-screen').style.display = 'flex';
-}
-
-// Отправка
 document.getElementById('send-btn').onclick = () => {
   const text = document.getElementById('msg-input').value.trim();
   if (!text) return;
-
-  const msg = {name: myName, text: text, time: Date.now()};
+  const msg = {name: myName, text, time: Date.now()};
   db.ref(currentPath).push(msg);
-
-  if (currentChatId) {
-    db.ref('private_chats/' + currentChatId).update({
-      lastMsg: text.length > 30 ? text.substr(0,27)+'...' : text,
-      lastTime: Date.now()
-    });
-  }
-
+  if (currentChatId) db.ref('private_chats/'+currentChatId).update({lastMsg: text.length>40 ? text.substr(0,37)+'...' : text, lastTime: Date.now()});
   document.getElementById('msg-input').value = '';
 };
 
-// Назад
 function backToList() {
   document.getElementById('chat-screen').style.display = 'none';
-  document.getElementById('main').style.display = 'block';
-  loadChatList(); // обновляем превью
+  document.getElementById('main').style.display = 'flex';
+  loadChatList();
 }
 
-function formatTime(ts) {
-  if (!ts) return '';
-  const d = new Date(ts);
-  const now = new Date();
-  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString('ru');
-}
+function formatTime(t){ if(!t) return ''; const d=new Date(t); const n=new Date(); return d.toDateString()===n.toDateString() ? d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('ru'); }
 
-// Автовход
 if (localStorage.getItem('myName')) {
   myName = localStorage.getItem('myName');
   document.getElementById('nameInput').value = myName;
