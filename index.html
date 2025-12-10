@@ -3,132 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Astik Messenger</title>
-  <meta name="theme-color" content="#128c7e">
+  <title>AstikChat</title>
+  <meta name="theme-color" content="#0d1b2a">
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
+    :root {
+      --bg: #0d1b2a;
+      --card: #1b263b;
+      --text: #e0e1dd;
+      --accent: #415a77;
+      --sent: #778da9;
+      --header: #1b263b;
+    }
+    [data-theme="light"] {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --text: #212529;
+      --accent: #778da9;
+      --sent: #0d6efd;
+      --header: #0d6efd;
+    }
     *{margin:0;padding:0;box-sizing:border-box}
     body{
-      background:#000;color:#fff;font-family:-apple-system,system-ui,sans-serif;
+      background:#000;color:var(--text);font-family:-apple-system,system-ui,sans-serif;
       height:100dvh;display:flex;align-items:flex-end;justify-content:center;
-      padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      overflow:hidden;
+      padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px;overflow:hidden;
     }
     #app{
-      width:100%;max-width:480px;height:100dvh;
-      background:#0b141a;border-radius:28px 28px 0 0;
-      overflow:hidden;box-shadow:0 -20px 80px rgba(0,0,0,0.9);
-      position:relative;display:flex;flex-direction:column;
+      width:100%;max-width:480px;height:100dvh;background:var(--bg);
+      border-radius:28px 28px 0 0;overflow:hidden;box-shadow:0 -20px 80px rgba(0,0,0,0.9);
+      position:relative;display:flex;flex-direction:column;transition:all 0.3s;
     }
     #app::before{
       content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);
-      width:140px;height:5px;background:#333;border-radius:10px;z-index:10;
+      width:140px;height:5px;background:#444;border-radius:10px;z-index:10;
     }
 
     header{
-      background:#128c7e;padding:16px 18px;color:white;font-size:21px;font-weight:600;
-      text-align:center;position:relative;z-index:5;
+      background:var(--header);color:white;padding:16px 18px;
+      font-size:22px;font-weight:700;text-align:center;position:relative;z-index:5;
+      display:flex;align-items:center;justify-content:center;gap:12px;
     }
-    .edit-nick{position:absolute;right:18px;top:16px;font-size:24px;cursor:pointer;opacity:0.85}
+    .theme-toggle{
+      position:absolute;right:18px;top:16px;width:44px;height:44px;
+      background:var(--card);border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:22px;cursor:pointer;transition:0.3s;
+      box-shadow:0 2px 10px rgba(0,0,0,0.3);
+    }
 
     #main{display:none;flex-direction:column;height:100%}
-    #chat-list{flex:1;overflow-y:auto;background:#11141a;padding:8px 0}
+    #chat-list{flex:1;overflow-y:auto;background:var(--bg);padding:8px 0}
     .chat-item{
-      padding:14px 18px;display:flex;align-items:center;gap:16px;
-      cursor:pointer;transition:0.15s;position:relative;
+      padding:15px 18px;display:flex;align-items:center;gap:16px;
+      cursor:pointer;transition:0.2s;position:relative;background:var(--card);margin:6px 12px;
+      border-radius:16px;
     }
-    .chat-item:active{background:#1a242e}
+    .chat-item:active{transform:scale(0.98)}
     .avatar{
-      width:58px;height:58px;border-radius:50%;background:#25d366;color:#000;
-      display:flex;align-items:center;justify-content:center;
-      font-weight:bold;font-size:24px;flex-shrink:0;
+      width:58px;height:58px;border-radius:50%;background:var(--accent);color:white;
+      display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:24px;
     }
-    .info{flex:1;min-width:0}
-    .chat-name{font-size:18px;font-weight:500}
-    .last-msg{font-size:14.8px;color:#b0b7c0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .unread{
-      background:#25d366;color:#000;padding:4px 9px;border-radius:12px;
-      font-size:12px;font-weight:bold;min-width:20px;text-align:center;
-    }
+    .info{flex:1}
+    .chat-name{font-size:18px;font-weight:600}
+    .last-msg{font-size:14.8px;color:#aaa;margin-top:4px}
 
     #chat-screen{display:none;flex-direction:column;height:100%}
     #chat-header{
-      background:#128c7e;padding:14px 18px;display:flex;align-items:center;gap:16px;position:relative;
+      background:var(--header);padding:14px 18px;display:flex;align-items:center;gap:16px;
+      position:relative;color:white;
     }
     .back-btn{
       position:absolute;left:14px;top:12px;background:none;border:none;color:white;
       font-size:28px;cursor:pointer;
     }
     #chat-messages{
-      flex:1;overflow-y:auto;background:#0b141a;padding:12px 10px;
-      display:flex;flex-direction:column;gap:10px;
+      flex:1;overflow-y:auto;background:var(--bg);padding:12px 10px;
+      display:flex;flex-direction:column;gap:12px;
     }
     .message{
-      max-width:78%;padding:9px 14px;border-radius:18px;line-height:1.45;
-      word-wrap:break-word;position:relative;
+      max-width:78%;padding:10px 16px;border-radius:18px;position:relative;
+      word-wrap:break-word;user-select:none;
     }
     .sent{
-      align-self:flex-end;background:#005c4b;color:white;
+      align-self:flex-end;background:var(--sent);color:white;
       border-bottom-right-radius:4px;
     }
     .received{
-      align-self:flex-start;background:#262d31;color:white;
+      align-self:flex-start;background:var(--card);color:var(--text);
       border-bottom-left-radius:4px;
     }
-    .msg-text{margin-bottom:4px}
+    .msg-text{margin-bottom:5px}
     .msg-time{font-size:11.5px;opacity:0.7;text-align:right}
+    .delete-btn{
+      position:absolute;top:4px;right:6px;background:rgba(255,0,0,0.7);
+      color:white;width:20px;height:20px;border-radius:50%;font-size:10px;
+      display:none;align-items:center;justify-content:center;cursor:pointer;
+    }
+    .sent .delete-btn{display:flex}
 
     .input-bar{
-      background:#11141a;padding:10px 14px;display:flex;align-items:center;gap:12px;
+      background:var(--card);padding:12px 16px;display:flex;align-items:center;gap:12px;
+      border-top:1px solid var(--accent);
     }
     #msg-input{
-      flex:1;padding:14px 18px;background:#2a3942;border:none;border-radius:30px;
-      color:white;font-size:16.5px;outline:none;
+      flex:1;padding:14px 20px;background:var(--bg);border:1px solid var(--accent);
+      border-radius:30px;color:var(--text);font-size:16.5px;outline:none;
     }
     #send-btn{
-      width:50px;height:50px;background:#25d366;border:none;border-radius:50%;
-      color:#000;font-size:22px;font-weight:bold;cursor:pointer;
+      width:52px;height:52px;background:var(--accent);border:none;border-radius:50%;
+      color:white;font-size:24px;font-weight:bold;cursor:pointer;
     }
 
     #welcome{
-      position:absolute;inset:0;background:linear-gradient(135deg,#128c7e,#25d366);
+      position:absolute;inset:0;background:linear-gradient(135deg,#0d1b2a,#415a77);
       display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100;
     }
-    #welcome h1{font-size:42px;margin-bottom:16px}
+    #welcome h1{font-size:44px;margin-bottom:16px;color:white}
     #welcome input{
       width:88%;padding:20px;border:none;border-radius:20px;font-size:19px;
       text-align:center;margin:20px 0;outline:none;
     }
     #welcome button{
-      padding:18px 70px;background:white;color:#128c7e;border-radius:40px;
+      padding:18px 80px;background:#415a77;color:white;border-radius:40px;
       font-size:20px;font-weight:bold;border:none;cursor:pointer;
-    }
-
-    .new-chat{
-      position:fixed;bottom:28px;right:24px;background:#25d366;color:#000;
-      width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
-      justify-content:center;font-size:36px;cursor:pointer;box-shadow:0 6px 25px rgba(37,211,102,0.5);
-      z-index:50;
     }
   </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- Приветствие -->
   <div id="welcome">
-    <h1>Astik</h1>
-    <p style="font-size:20px;margin-bottom:30px">Введи своё имя</p>
-    <input type="text" id="nameInput" placeholder="Твоё имя" maxlength="18">
+    <h1>AstikChat</h1>
+    <p style="font-size:20px;margin-bottom:30px;color:white">Введи своё имя</p>
+    <input type="text" id="nameInput" placeholder="Твой ник" maxlength="18">
     <button onclick="start()">Войти</button>
   </div>
 
-  <!-- Главный экран -->
   <div id="main">
     <header>
-      Мои чаты
-      <div class="edit-nick" onclick="changeName()">Edit</div>
+      AstikChat
+      <div class="theme-toggle" onclick="toggleTheme()" id="themeBtn">Moon</div>
     </header>
     <div id="chat-list">
       <div class="chat-item" onclick="openPublic()">
@@ -141,7 +156,6 @@
     </div>
   </div>
 
-  <!-- Чат -->
   <div id="chat-screen">
     <div id="chat-header">
       <button class="back-btn" onclick="back()">Back</button>
@@ -153,12 +167,9 @@
     <div id="chat-messages"></div>
     <div class="input-bar">
       <input type="text" id="msg-input" placeholder="Сообщение...">
-      <button id="send-btn">Send</button>
+      <button id="send-btn" onclick="send()">Send</button>
     </div>
   </div>
-
-  <!-- Кнопка + -->
-  <div class="new-chat" onclick="newPrivate()">+</div>
 </div>
 
 <script>
@@ -177,8 +188,22 @@ const db = firebase.database();
 let myName = localStorage.getItem('astik_name') || '';
 let currentChatId = null;
 let currentPartner = null;
+let msgListener = null;
 
 if (myName) start();
+
+// Тема
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.getElementById('themeBtn').textContent = savedTheme === 'light' ? 'Sun' : 'Moon';
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const newTheme = isLight ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  document.getElementById('themeBtn').textContent = newTheme === 'light' ? 'Sun' : 'Moon';
+}
 
 function start() {
   if (!myName) {
@@ -191,41 +216,25 @@ function start() {
   loadChats();
 }
 
-function changeName() {
-  const n = prompt('Новое имя:', myName);
-  if (n && n.trim() && n.trim() !== myName) {
-    myName = n.trim();
-    localStorage.setItem('astik_name', myName);
-    loadChats();
-  }
-}
-
 function chatId(a, b) {
   return [a.toLowerCase(), b.toLowerCase()].sort().join('_');
-}
-
-function newPrivate() {
-  const nick = prompt('С кем начать чат?\nВведите ник:').trim();
-  if (!nick || nick.toLowerCase() === myName.toLowerCase()) return alert('Некорректный ник');
-  openChat(nick);
 }
 
 function openPublic() {
   currentChatId = 'public';
   currentPartner = null;
-  showChatScreen('Общий чат', 'G');
-  listenToMessages('public_messages');
+  showChat('Общий чат', 'G');
+  listenMessages('public_messages', true);
 }
 
-function openChat(partner) {
+function openPrivate(partner) {
   currentChatId = chatId(myName, partner);
   currentPartner = partner;
-  showChatScreen(partner, partner[0].toUpperCase());
-  listenToMessages(`private_chats/${currentChatId}/messages`);
-  markAsRead();
+  showChat(partner, partner[0].toUpperCase());
+  listenMessages(`private_chats/${currentChatId}/messages`, false);
 }
 
-function showChatScreen(title, avatar) {
+function showChat(title, avatar) {
   document.getElementById('main').style.display = 'none';
   document.getElementById('chat-screen').style.display = 'flex';
   document.getElementById('partner-name').textContent = title;
@@ -233,25 +242,53 @@ function showChatScreen(title, avatar) {
   document.getElementById('chat-messages').innerHTML = '';
 }
 
-function listenToMessages(path) {
-  db.ref(path).limitToLast(200).on('child_added', s => {
+function listenMessages(path, isPublic) {
+  if (msgListener) msgListener();
+  msgListener = db.ref(path).limitToLast(200).on('child_added', s => {
     const m = s.val();
     const isMe = m.name === myName;
     const div = document.createElement('div');
     div.className = `message ${isMe ? 'sent' : 'received'}`;
-    div.innerHTML = `
+    div.dataset.key = s.key;
+
+    if (isPublic && !isMe) {
+      div.innerHTML = `<small style="opacity:0.8">${m.name}</small><br>`;
+      div.onclick = () => openPrivate(m.name);
+      div.style.cursor = 'pointer';
+    }
+
+    div.innerHTML += `
       <div class="msg-text">${m.text}</div>
       <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>
+      ${isMe ? '<div class="delete-btn" onclick="deleteMsg(this)">×</div>' : ''}
     `;
+
+    // Долгое нажатие для удаления
+    if (isMe) {
+      div.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        if (confirm('Удалить сообщение?')) deleteMsg(div);
+      });
+    }
+
     document.getElementById('chat-messages').appendChild(div);
     div.scrollIntoView({behavior:'smooth'});
   });
 }
 
-function sendMessage() {
-  const input = document.getElementById('msg-input');
+function deleteMsg(el) {
+  const msgDiv = el.closest('.message');
+  const key = msgDiv.dataset.key;
+  const path = currentChatId === 'public' ? 'public_messages' : `private_chats/${currentChatId}/messages`;
+  db.ref(path + '/' + key).remove();
+  msgDiv.remove();
+}
+
+function send() {
+  const input = document.getElementById('msg-inputInput') || document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text) return;
+
   const msg = { name: myName, text, time: Date.now() };
 
   if (currentChatId === 'public') {
@@ -261,20 +298,14 @@ function sendMessage() {
     db.ref(path).push(msg);
     db.ref(`private_chats/${currentChatId}`).update({
       lastMsg: text.substring(0,40)+(text.length>40?'...':''),
-      lastTime: Date.now(),
-      [`unread/${currentPartner.toLowerCase()}`]: firebase.database.ServerValue.increment(1)
+      lastTime: Date.now()
     });
   }
   input.value = '';
 }
 
-function markAsRead() {
-  if (currentChatId !== 'public') {
-    db.ref(`private_chats/${currentChatId}/unread/${myName.toLowerCase()}`).set(0);
-  }
-}
-
 function back() {
+  if (msgListener) msgListener();
   document.getElementById('chat-screen').style.display = 'none';
   document.getElementById('main').style.display = 'flex';
   loadChats();
@@ -291,25 +322,21 @@ function loadChats() {
   </div>`;
 
   db.ref('private_chats').orderByChild('lastTime').on('value', snap => {
-    const existing = container.querySelectorAll('.private');
-    existing.forEach(el => el.remove());
-
+    container.querySelectorAll('.private-chat').forEach(el => el.remove());
     snap.forEach(child => {
       const data = child.val();
       const id = child.key;
       const partner = id.split('_').find(u => u.toLowerCase() !== myName.toLowerCase());
-      if (partner) {
-        const unread = (data.unread && data.unread[myName.toLowerCase()]) || 0;
+      if (partner && data.lastMsg) {
         const item = document.createElement('div');
-        item.className = 'chat-item private';
-        item.onclick = () => openChat(partner);
+        item.className = 'chat-item private-chat';
+        item.onclick = () => openPrivate(partner);
         item.innerHTML = `
           <div class="avatar">${partner[0].toUpperCase()}</div>
           <div class="info">
             <div class="chat-name">${partner}</div>
-            <div class="last-msg">${data.lastMsg || 'Начните чат'}</div>
+            <div class="last-msg">${data.lastMsg}</div>
           </div>
-          ${unread > 0 ? `<div class="unread">${unread}</div>` : ''}
         `;
         container.appendChild(item);
       }
@@ -317,10 +344,9 @@ function loadChats() {
   });
 }
 
-// Send button
-document.getElementById('send-btn').onclick = sendMessage;
-document.getElementById('msg-input').addEventListener('keypress', e => {
-  if (e.key === 'Enter') sendMessage();
+// Enter = send
+document.getElementById('msg-input')?.addEventListener('keypress', e => {
+  if (e.key === 'Enter') send();
 });
 </script>
 </body>
