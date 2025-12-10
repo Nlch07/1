@@ -3,69 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Чатик</title>
+<title>Мой Вотсап</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<meta name="theme-color" content="#075e54">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#000;color:#fff;font-family:system-ui,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .screen{display:none;height:100%;flex-direction:column}
-  .active{display:flex!important}
+  body{background:#0b141a;color:#fff;font-family:system-ui,sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  header{background:#075e54;padding:14px 16px;color:white;font-size:20px;font-weight:500;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.3)}
   
-  /* Экран выбора имени */
-  #welcome{background:linear-gradient(135deg,#667eea,#764ba2);justify-content:center;align-items:center;text-align:center;padding:20px}
-  #welcome h1{font-size:32px;margin-bottom:30px}
-  #welcome input{width:90%;max-width:340px;padding:18px;font-size:18px;border:none;border-radius:20px;text-align:center;margin-bottom:20px}
-  #welcome button{padding:18px 40px;background:#fff;color:#667eea;font-weight:bold;border-radius:20px;font-size:18px;border:none;cursor:pointer}
+  /* Список чатов */
+  #chat-list{flex:1;overflow-y:auto;background:#111}
+  .chat-item{padding:14px 16px;border-bottom:1px solid #222;display:flex;align-items:center;gap:14px;cursor:pointer;transition:0.2s}
+  .chat-item:active{background:#1e2a33}
+  .avatar{width:52px;height:52px;border-radius:50%;background:#25d366;color:black;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:20px;flex-shrink:0}
+  .info{flex:1;min-width:0}
+  .chat-name{font-size:17px;font-weight:500;margin-bottom:4px}
+  .last-msg{font-size:14px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .time{font-size:12px;color:#25d366}
 
-  /* Основной интерфейс */
-  .chat{flex:1;display:flex;flex-direction:column;background:#111}
-  header{padding:16px;background:#000;text-align:center;font-weight:600;font-size:18px;position:relative}
-  .back{position:absolute;left:12px;top:12px;font-size:28px;background:none;border:none;color:#fff;cursor:pointer}
-  #messages{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:10px}
-  .msg{max-width:82%;padding:11px 15px;border-radius:20px;word-wrap:break-word;align-self:flex-start;background:#222}
-  .my{align-self:flex-end;background:#0d8bff;border-bottom-right-radius:5px}
-  .name{font-size:13px;font-weight:600;margin-bottom:4px;cursor:pointer;color:#7c9eff}
-  .input-area{padding:10px;background:#000;display:flex;gap:10px}
-  input{flex:1;padding:15px 18px;background:#222;color:#fff;border:none;border-radius:30px;font-size:17px}
-  button.send{width:52px;height:52px;background:#0d8bff;border:none;border-radius:50%;font-size:24px}
+  /* Экран чата */
+  #chat-screen{display:none;flex-direction:column;height:100%}
+  #chat-header{background:#075e54;padding:12px 16px;display:flex;align-items:center;gap:12px;color:white;position:relative}
+  #chat-header .back{position:absolute;left:10px;font-size:28px;background:none;border:none;color:white}
+  #chat-messages{flex:1;overflow-y:auto;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 100"><rect fill="%230b141a" width="100" height="100"/><path fill="%231e2a33" opacity="0.03" d="M0 0h100v100H0z"/></svg>');padding:10px 8px;display:flex;flex-direction:column;gap:8px}
+  .message{max-width:78%;padding:8px 14px;border-radius:18px;position:relative;word-wrap:break-word;line-height:1.4}
+  .sent{align-self:flex-end;background:#005c4b;color:white;border-bottom-right-radius:4px}
+  .received{align-self:flex-start;background:#262d31;color:white;border-bottom-left-radius:4px}
+  .msg-text{margin-bottom:4px}
+  .msg-time{font-size:11px;opacity:0.7;text-align:right}
+  .input-bar{background:#111;padding:8px 10px;display:flex;align-items:center;gap:10px}
+  #msg-input{flex:1;padding:12px 16px;background:#222;border:none;border-radius:30px;color:white;font-size:16px}
+  #send-btn{width:46px;height:46px;background:#25d366;border:none;border-radius:50%;color:black;font-size:20px}
+
+  /* Экран имени */
+  #welcome{background:linear-gradient(135deg,#128c7e,#25d366);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;text-align:center}
+  #welcome h1{font-size:36px;margin-bottom:20px;color:white}
+  #welcome input{width:85%;padding:18px;border:none;border-radius:16px;font-size:18px;text-align:center;margin:20px 0}
+  #welcome button{padding:16px 50px;background:white;color:#128c7e;border-radius:30px;font-size:18px;font-weight:bold;border:none}
 </style>
 </head>
 <body>
 
-<!-- Экран выбора имени -->
-<div id="welcome" class="screen active">
-  <h1>Привет!</h1>
-  <p style="font-size:18px;margin-bottom:30px">Как тебя зовут?</p>
-  <input type="text" id="nameInput" placeholder="Введи имя" maxlength="20">
-  <button onclick="enterChat()">Войти в чат</button>
+<!-- Выбор имени -->
+<div id="welcome" id="welcome">
+  <h1>Вотсапчик</h1>
+  <p style="color:white;font-size:18px;margin-bottom:30px">Введи своё имя</p>
+  <input type="text" id="nameInput" placeholder="Как тебя зовут?" maxlength="20">
+  <button onclick="startApp()">Войти</button>
 </div>
 
-<!-- Главный экран с двумя чатами -->
-<div id="main" class="screen">
-  <!-- Общий чат -->
-  <div class="chat">
-    <header>Общий чат</header>
-    <div id="messages"></div>
-    <div class="input-area">
-      <input type="text" id="public-input" placeholder="Сообщение всем...">
-      <button class="send" id="public-send">Send</button>
+<!-- Главный интерфейс -->
+<div id="main" style="display:none">
+  <header>Мои чаты</header>
+  <div id="chat-list">
+    <div class="chat-item" onclick="openPublicChat()">
+      <div class="avatar">G</div>
+      <div class="info">
+        <div class="chat-name">Общий чат</div>
+        <div class="last-msg">Нажми, чтобы войти</div>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- Личный чат -->
-  <div class="chat" style="border-top:4px solid #222">
-    <header id="private-header">Личный чат — нажми на имя выше ↑</header>
-    <div id="private-messages"></div>
-    <div class="input-area">
-      <input type="text" id="private-input" placeholder="Выбери человека..." disabled>
-      <button class="send" id="private-send" disabled>Send</button>
+<!-- Экран одного чата -->
+<div id="chat-screen">
+  <div id="chat-header">
+    <button class="back" onclick="backToList()">Back</button>
+    <div class="avatar" id="chat-avatar">A</div>
+    <div class="info">
+      <div id="chat-title">Загрузка...</div>
     </div>
+  </div>
+  <div id="chat-messages"></div>
+  <div class="input-bar">
+    <input type="text" id="msg-input" placeholder="Сообщение" maxlength="1000">
+    <button id="send-btn">Send</button>
   </div>
 </div>
 
 <script>
-const firebaseConfig = {
+const firebaseConfig = { /* твоя конфигурация */
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
   authDomain: "test3-88cee.firebaseapp.com",
   databaseURL: "https://test3-88cee-default-rtdb.europe-west1.firebasedatabase.app",
@@ -78,93 +98,137 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let myName = '';
-let currentFriend = null;
+let currentChatId = null;
+let currentChatTitle = '';
+let currentPath = '';
 
-// Вход по имени
-function enterChat() {
+// Запуск
+function startApp() {
   myName = document.getElementById('nameInput').value.trim() || 'Гость';
-  if (myName.length < 1) return alert('Введи имя!');
+  if (!myName) return alert('Введи имя!');
   localStorage.setItem('myName', myName);
-  
-  document.getElementById('welcome').classList.remove('active');
-  document.getElementById('main').classList.add('active');
-  
-  loadPublicChat();
+
+  document.getElementById('welcome').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+
+  loadChatList();
 }
 
-// === Общий чат ===
-function loadPublicChat() {
-  const ref = db.ref('public_messages');
-  ref.orderByChild('time').limitToLast(200).on('child_added', s => {
-    const msg = s.val();
-    const div = document.createElement('div');
-    div.className = `msg ${msg.name === myName ? 'my' : ''}`;
-    
-    const nameSpan = document.createElement('div');
-    nameSpan.className = 'name';
-    nameSpan.textContent = msg.name;
-    if (msg.name !== myName) {
-      nameSpan.onclick = () => openPrivate(msg.name);
-    }
-    
-    const text = document.createElement('div');
-    text.textContent = msg.text;
-    
-    div.appendChild(nameSpan);
-    div.appendChild(text);
-    document.getElementById('messages').appendChild(div);
-    div.scrollIntoView({behavior: 'smooth'});
+// Список чатов
+function loadChatList() {
+  const list = document.getElementById('chat-list');
+  list.innerHTML = `<div class="chat-item" onclick="openPublicChat()">
+    <div class="avatar">G</div>
+    <div class="info">
+      <div class="chat-name">Общий чат</div>
+      <div class="last-msg">Все пишут сюда</div>
+    </div>
+  </div>`;
+
+  // Загружаем личные чаты
+  db.ref('private_chats').orderByChild('lastTime').limitToLast(50).on('child_added', snap => {
+    const chat = snap.val();
+    const users = snap.key.split('_');
+    const friend = users.find(u => u.toLowerCase() !== myName.toLowerCase());
+    if (!friend) return;
+
+    const item = document.createElement('div');
+    item.className = 'chat-item';
+    item.onclick = () => openPrivateChat(friend);
+    item.innerHTML = `
+      <div class="avatar">${friend[0].toUpperCase()}</div>
+      <div class="info">
+        <div class="chat-name">${friend}</div>
+        <div class="last-msg">${chat.lastMsg || 'Напишите первым'}</div>
+      </div>
+      <div class="time">${formatTime(chat.lastTime)}</div>
+    `;
+    list.appendChild(item);
   });
 }
 
-// Отправка в общий
-document.getElementById('public-send').onclick = () => sendMsg('public_messages', 'public-input');
-document.getElementById('public-input').onkeypress = e => { if(e.key==='Enter') sendMsg('public_messages', 'public-input'); };
-
-// === Личный чат ===
-function openPrivate(friendName) {
-  if (friendName === myName) return;
-  currentFriend = friendName;
-  document.getElementById('private-header').textContent = `Чат с ${friendName}`;
-  document.getElementById('private-input').disabled = false;
-  document.getElementById('private-send').disabled = false;
-  document.getElementById('private-input').placeholder = `Пиши ${friendName}...`;
-  document.getElementById('private-messages').innerHTML = '';
-
-  const chatId = [myName, friendName].sort().join('_').toLowerCase();
-  const ref = db.ref(`private_chats/${chatId}/messages`);
-  
-  ref.orderByChild('time').limitToLast(200).on('child_added', s => {
-    const msg = s.val();
-    const div = document.createElement('div');
-    div.className = `msg ${msg.name === myName ? 'my' : ''}`;
-    div.innerHTML = `<div class="name">${msg.name === myName ? 'Вы' : friendName}</div><div>${msg.text}</div>`;
-    document.getElementById('private-messages').appendChild(div);
-    div.scrollIntoView({behavior: 'smooth'});
-  });
-
-  // Отправка в личку
-  const sendPrivate = () => sendMsg(`private_chats/${chatId}/messages`, 'private-input');
-  document.getElementById('private-send').onclick = sendPrivate;
-  document.getElementById('private-input').onkeypress = e => { if(e.key==='Enter') sendPrivate(); };
+// Открыть общий чат
+function openPublicChat() {
+  currentPath = 'public_messages';
+  currentChatTitle = 'Общий чат';
+  currentChatId = null;
+  openChatScreen();
+  loadMessages('public_messages', 'G');
 }
 
-function sendMsg(path, inputId) {
-  const input = document.getElementById(inputId);
-  const text = input.value.trim();
+// Открыть личку
+function openPrivateChat(friendName) {
+  const chatId = [myName, friendName].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())).join('_');
+  currentPath = `private_chats/${chatId}/messages`;
+  currentChatTitle = friendName;
+  currentChatId = chatId;
+  openChatScreen();
+  loadMessages(currentPath, friendName[0].toUpperCase());
+}
+
+// Загрузка сообщений
+function loadMessages(path, avatarLetter) {
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = '';
+  document.getElementById('chat-avatar').textContent = avatarLetter;
+  document.getElementById('chat-title').textContent = currentChatTitle;
+
+  db.ref(path).orderByChild('time').limitToLast(200).on('child_added', s => {
+    const m = s.val();
+    const div = document.createElement('div');
+    div.className = `message ${m.name===myName ? 'sent' : 'received'}`;
+    div.innerHTML = `
+      <div class="msg-text">${m.text}</div>
+      <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru', {hour:'2-digit', minute:'2-digit'})}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+function openChatScreen() {
+  document.getElementById('main').style.display = 'none';
+  document.getElementById('chat-screen').style.display = 'flex';
+}
+
+// Отправка
+document.getElementById('send-btn').onclick = () => {
+  const text = document.getElementById('msg-input').value.trim();
   if (!text) return;
-  db.ref(path).push({name: myName, text: text, time: Date.now()});
-  input.value = '';
+
+  const msg = {name: myName, text: text, time: Date.now()};
+  db.ref(currentPath).push(msg);
+
+  if (currentChatId) {
+    db.ref('private_chats/' + currentChatId).update({
+      lastMsg: text.length > 30 ? text.substr(0,27)+'...' : text,
+      lastTime: Date.now()
+    });
+  }
+
+  document.getElementById('msg-input').value = '';
+};
+
+// Назад
+function backToList() {
+  document.getElementById('chat-screen').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+  loadChatList(); // обновляем превью
 }
 
-// Автозагрузка имени
-window.onload = () => {
-  const saved = localStorage.getItem('myName');
-  if (saved) {
-    myName = saved;
-    document.getElementById('nameInput').value = saved;
-    enterChat();
-  }
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('ru');
+}
+
+// Автовход
+if (localStorage.getItem('myName')) {
+  myName = localStorage.getItem('myName');
+  document.getElementById('nameInput').value = myName;
+  startApp();
 }
 </script>
 </body>
