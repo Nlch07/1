@@ -12,8 +12,8 @@
       --bg: #0d1b2a;
       --card: #1b263b;
       --text: #e0e1dd;
-      --accent: #415a77;
-      --sent: #778da9;
+      --accent: #778da9;
+      --sent: #0d6efd;
       --header: #1b263b;
     }
     [data-theme="light"] {
@@ -33,7 +33,7 @@
     #app{
       width:100%;max-width:480px;height:100dvh;background:var(--bg);
       border-radius:28px 28px 0 0;overflow:hidden;box-shadow:0 -20px 80px rgba(0,0,0,0.9);
-      position:relative;display:flex;flex-direction:column;transition:all 0.3s;
+      position:relative;display:flex;flex-direction:column;transition:background 0.3s;
     }
     #app::before{
       content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);
@@ -46,10 +46,9 @@
       display:flex;align-items:center;justify-content:center;gap:12px;
     }
     .theme-toggle{
-      position:absolute;right:18px;top:16px;width:44px;height:44px;
-      background:var(--card);border-radius:50%;display:flex;align-items:center;
-      justify-content:center;font-size:22px;cursor:pointer;transition:0.3s;
-      box-shadow:0 2px 10px rgba(0,0,0,0.3);
+      position:absolute;right:18px;top:16px;width:48px;height:48px;
+      background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:24px;cursor:pointer;transition:0.3s;
     }
 
     #main{display:none;flex-direction:column;height:100%}
@@ -59,7 +58,6 @@
       cursor:pointer;transition:0.2s;position:relative;background:var(--card);margin:6px 12px;
       border-radius:16px;
     }
-    .chat-item:active{transform:scale(0.98)}
     .avatar{
       width:58px;height:58px;border-radius:50%;background:var(--accent);color:white;
       display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:24px;
@@ -75,15 +73,15 @@
     }
     .back-btn{
       position:absolute;left:14px;top:12px;background:none;border:none;color:white;
-      font-size:28px;cursor:pointer;
+      font-size:30px;cursor:pointer;
     }
     #chat-messages{
       flex:1;overflow-y:auto;background:var(--bg);padding:12px 10px;
       display:flex;flex-direction:column;gap:12px;
     }
     .message{
-      max-width:78%;padding:10px 16px;border-radius:18px;position:relative;
-      word-wrap:break-word;user-select:none;
+      max-width:78%;padding:10px 16px;border-radius:18px;
+      word-wrap:break-word;
     }
     .sent{
       align-self:flex-end;background:var(--sent);color:white;
@@ -95,12 +93,6 @@
     }
     .msg-text{margin-bottom:5px}
     .msg-time{font-size:11.5px;opacity:0.7;text-align:right}
-    .delete-btn{
-      position:absolute;top:4px;right:6px;background:rgba(255,0,0,0.7);
-      color:white;width:20px;height:20px;border-radius:50%;font-size:10px;
-      display:none;align-items:center;justify-content:center;cursor:pointer;
-    }
-    .sent .delete-btn{display:flex}
 
     .input-bar{
       background:var(--card);padding:12px 16px;display:flex;align-items:center;gap:12px;
@@ -112,7 +104,7 @@
     }
     #send-btn{
       width:52px;height:52px;background:var(--accent);border:none;border-radius:50%;
-      color:white;font-size:24px;font-weight:bold;cursor:pointer;
+      color:white;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;
     }
 
     #welcome{
@@ -128,6 +120,13 @@
       padding:18px 80px;background:#415a77;color:white;border-radius:40px;
       font-size:20px;font-weight:bold;border:none;cursor:pointer;
     }
+
+    .new-chat{
+      position:fixed;bottom:28px;right:24px;background:var(--accent);color:white;
+      width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:36px;cursor:pointer;box-shadow:0 6px 25px rgba(119,141,169,0.5);
+      z-index:50;
+    }
   </style>
 </head>
 <body>
@@ -137,7 +136,7 @@
     <h1>AstikChat</h1>
     <p style="font-size:20px;margin-bottom:30px;color:white">Введи своё имя</p>
     <input type="text" id="nameInput" placeholder="Твой ник" maxlength="18">
-    <button onclick="start()">Войти</button>
+    <button onclick="start()">Enter</button>
   </div>
 
   <div id="main">
@@ -170,6 +169,8 @@
       <button id="send-btn" onclick="send()">Send</button>
     </div>
   </div>
+
+  <div class="new-chat" onclick="newPrivate()">+</div>
 </div>
 
 <script>
@@ -220,6 +221,12 @@ function chatId(a, b) {
   return [a.toLowerCase(), b.toLowerCase()].sort().join('_');
 }
 
+function newPrivate() {
+  const nick = prompt('С кем начать чат?\nВведите ник:').trim();
+  if (!nick || nick.toLowerCase() === myName.toLowerCase()) return alert('Некорректный ник');
+  openChat(nick);
+}
+
 function openPublic() {
   currentChatId = 'public';
   currentPartner = null;
@@ -227,7 +234,7 @@ function openPublic() {
   listenMessages('public_messages', true);
 }
 
-function openPrivate(partner) {
+function openChat(partner) {
   currentChatId = chatId(myName, partner);
   currentPartner = partner;
   showChat(partner, partner[0].toUpperCase());
@@ -249,43 +256,25 @@ function listenMessages(path, isPublic) {
     const isMe = m.name === myName;
     const div = document.createElement('div');
     div.className = `message ${isMe ? 'sent' : 'received'}`;
-    div.dataset.key = s.key;
 
     if (isPublic && !isMe) {
       div.innerHTML = `<small style="opacity:0.8">${m.name}</small><br>`;
-      div.onclick = () => openPrivate(m.name);
+      div.onclick = () => openChat(m.name);
       div.style.cursor = 'pointer';
     }
 
     div.innerHTML += `
       <div class="msg-text">${m.text}</div>
       <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>
-      ${isMe ? '<div class="delete-btn" onclick="deleteMsg(this)">×</div>' : ''}
     `;
-
-    // Долгое нажатие для удаления
-    if (isMe) {
-      div.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        if (confirm('Удалить сообщение?')) deleteMsg(div);
-      });
-    }
 
     document.getElementById('chat-messages').appendChild(div);
     div.scrollIntoView({behavior:'smooth'});
   });
 }
 
-function deleteMsg(el) {
-  const msgDiv = el.closest('.message');
-  const key = msgDiv.dataset.key;
-  const path = currentChatId === 'public' ? 'public_messages' : `private_chats/${currentChatId}/messages`;
-  db.ref(path + '/' + key).remove();
-  msgDiv.remove();
-}
-
 function send() {
-  const input = document.getElementById('msg-inputInput') || document.getElementById('msg-input');
+  const input = document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text) return;
 
@@ -330,7 +319,7 @@ function loadChats() {
       if (partner && data.lastMsg) {
         const item = document.createElement('div');
         item.className = 'chat-item private-chat';
-        item.onclick = () => openPrivate(partner);
+        item.onclick = () => openChat(partner);
         item.innerHTML = `
           <div class="avatar">${partner[0].toUpperCase()}</div>
           <div class="info">
@@ -345,7 +334,7 @@ function loadChats() {
 }
 
 // Enter = send
-document.getElementById('msg-input')?.addEventListener('keypress', e => {
+document.getElementById('msg-input').addEventListener('keypress', e => {
   if (e.key === 'Enter') send();
 });
 </script>
