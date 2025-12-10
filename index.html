@@ -1,105 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Чат</title>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; font-family:system-ui,Arial,sans-serif; }
-    body { background:#111; color:#fff; height:100vh; display:flex; flex-direction:column; }
-    #messages { flex:1; padding:10px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
-    .msg { max-width:80%; padding:10px 14px; border-radius:18px; line-height:1.4; word-wrap:break-word; }
-    .my { align-self:flex-end; background:#0d8bff; border-bottom-right-radius:4px; }
-    .other { align-self:flex-start; background:#333; border-bottom-left-radius:4px; }
-    .name { font-size:12px; opacity:0.7; margin-bottom:4px; }
-    #input-area { padding:10px; background:#1e1e1e; display:flex; flex-direction:column; }
-    #form { display:flex; gap:8px; }
-    #message { flex:1; padding:12px 16px; background:#333; color:#fff; border:none; border-radius:24px; font-size:16px; }
-    #message:focus { outline:none; background:#444; }
-    #send { width:48px; height:48px; background:#0d8bff; border:none; border-radius:50%; color:#fff; font-size:20px; cursor:pointer; }
-    #name-input { width:100%; padding:10px; margin-bottom:8px; background:#333; color:#fff; border:none; border-radius:8px; text-align:center; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
 </head>
 <body>
-
-  <div id="messages"></div>
-
-  <div id="input-area">
-    <input type="text" id="name-input" placeholder="Введи своё имя" maxlength="20"/>
-    <form id="form">
-      <input type="text" id="message" placeholder="Сообщение..." autocomplete="off" maxlength="500"/>
-      <button id="send" type="submit">➤</button>
-    </form>
-  </div>
-
-<script>
-// === Твоя конфигурация Firebase ===
-const firebaseConfig = {
-  apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
-  authDomain: "test3-88cee.firebaseapp.com",
-  databaseURL: "https://test3-88cee-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "test3-88cee",
-  storageBucket: "test3-88cee.firebasestorage.app",
-  messagingSenderId: "469479851370",
-  appId: "1:469479851370:web:915e95767b012c281e1113"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const messagesRef = db.ref('messages');
-
-// Сохраняем имя в localStorage
-let myName = localStorage.getItem('chatName') || '';
-if (myName) document.getElementById('name-input').value = myName;
-
-document.getElementById('name-input').addEventListener('change', (e) => {
-  myName = e.target.value.trim() || 'Аноним';
-  localStorage.setItem('chatName', myName);
-});
-
-// Отправка сообщения
-document.getElementById('form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const text = document.getElementById('message').value.trim();
-  if (!text || !myName) return;
-
-  messagesRef.push({
-    name: myName,
-    text: text,
-    time: Date.now()
-  });
-
-  document.getElementById('message').value = '';
-});
-
-// Получение сообщений (последние 100)
-messagesRef.orderByChild('time').limitToLast(100).on('child_added', (snap) => {
-  const msg = snap.val();
-  addMessage(msg);
-});
-
-function addMessage(msg) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + (msg.name === myName ? 'my' : 'other');
-
-  const nameSpan = document.createElement('div');
-  nameSpan.className = 'name';
-  nameSpan.textContent = msg.name === myName ? 'Вы' : msg.name;
-
-  const textDiv = document.createElement('div');
-  textDiv.textContent = msg.text;
-
-  div.appendChild(nameSpan);
-  div.appendChild(textDiv);
-  document.getElementById('messages').appendChild(div);
-
-  // Автоскролл вниз
-  window.scrollTo(0, document.body.scrollHeight);
-}
-</script>
+  1
 </body>
 </html>
