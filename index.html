@@ -1,21 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Astik Chat</title>
   <meta name="theme-color" content="#00ff9d">
   <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root {
-      --astik: #00ff9d;
-      --bg: #0a0a0a;
-      --card: #111;
-      --text: #e0e0e0;
-      --input: #1a1a1a;
-    }
+    :root { --astik:#00ff9d; --bg:#0a0a0a; --card:#111; --text:#e0e0e0; --input:#1a1a1a; }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
     header { background:var(--astik); color:#000; padding:18px; text-align:center; font-weight:bold; font-size:20px; position:relative; }
@@ -25,20 +19,18 @@
     .chat-item { display:flex; align-items:center; padding:12px 0; cursor:pointer; border-bottom:1px solid #222; }
     .chat-item:last-child { border:none; }
     .chat-item i { color:var(--astik); margin-right:16px; font-size:20px; }
-    .chat-name { font-weight:600; }
+    .chat-name { font-weight:600; font-size:17px; }
     .chat-preview { font-size:13px; color:#888; margin-top:4px; }
     .input-group { display:flex; gap:10px; margin-top:10px; }
     input, button { padding:14px; border:none; border-radius:50px; font-size:16px; }
     input { flex:1; background:var(--input); color:white; }
     button { background:var(--astik); color:#000; width:56px; cursor:pointer; font-size:20px; }
-    .messages { padding:10px 0; max-height:70vh; overflow-y:auto; }
-    .msg { max-width:80%; margin:8px 0; padding:10px 14px; border-radius:18px; position:relative; }
-    .me { background:var(--astik); color:#000; align-self:flex-end; border-bottom-right-radius:4px; margin-left:auto; }
+    .messages { padding:10px 0; }
+    .msg { max-width:80%; margin:8px 0; padding:10px 14px; border-radius:18px; word-wrap:break-word; }
+    .me { background:var(--astik); color:#000; align-self:flex-end; margin-left:auto; border-bottom-right-radius:4px; }
     .other { background:#222; align-self:flex-start; border-bottom-left-radius:4px; }
     .time { font-size:11px; opacity:0.7; margin-top:4px; text-align:right; }
     .create-btn { background:var(--astik); color:#000; text-align:center; padding:18px; border-radius:12px; font-weight:bold; cursor:pointer; margin:20px 10px 10px; }
-    .copy-notify { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--astik); color:#000; padding:12px 24px; border-radius:50px; z-index:1000; font-weight:bold; }
-    .hidden { display:none; }
     #chat-view { display:none; flex-direction:column; height:100vh; }
     #messages { flex:1; overflow-y:auto; padding:10px; }
     #input-area { padding:10px; background:var(--bg); border-top:1px solid #222; }
@@ -46,47 +38,53 @@
 </head>
 <body>
 
-  <!-- Главный экран со списком чатов -->
-  <div id="chat-list-view">
-    <header>
-      <div>Astik Chat</div>
-    </header>
+  <!-- Список чатов -->
+  <div id="list-view">
+    <header>Astik Chat</header>
     <main>
       <div class="card">
-        <div class="chat-item" onclick="openChat('public','Общий чат')">
+        <div class="chat-item" onclick="openChat('public', 'Общий чат')">
           <i class="fas fa-users"></i>
-          <div>
-            <div class="chat-name">Общий чат</div>
-            <div class="chat-preview">Нажми, чтобы войти</div>
-          </div>
+          <div><div class="chat-name">Общий чат</div></div>
         </div>
       </div>
 
-      <div id="private-chats-list"></div>
+      <div id="private-list"></div>
 
-      <div class="create-btn" onclick="createPrivateChat()">
-        <i class="fas fa-plus"></i> Создать личную переписку
+      <div class="create-btn" onclick="showCreateDialog()">
+        Создать личную переписку
       </div>
     </main>
   </div>
 
-  <!-- Экран конкретного чата -->
+  <!-- Окно чата -->
   <div id="chat-view">
     <header>
-      <i class="fas fa-arrow-left" onclick="backToList()"></i>
+      <i class="fas fa-arrow-left" onclick="back()"></i>
       <div id="chat-title">Чат</div>
     </header>
     <div id="messages"></div>
     <div id="input-area">
       <div class="input-group">
-        <input type="text" id="msg-input" placeholder="Сообщение..." maxlength="1000"/>
-        <button onclick="sendMessage()">Send</button>
+        <input type="text" id="msg-input" placeholder="Сообщение..." maxlength="1000">
+        <button onclick="send()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Диалог создания лички -->
+  <div id="create-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100; padding:20px; display:flex; flex-direction:column; justify-content:center;">
+    <div style="background:#111; padding:30px; border-radius:20px; border:2px solid var(--astik);">
+      <h2 style="color:var(--astik); text-align:center; margin-bottom:20px;">С кем начать чат?</h2>
+      <input type="text" id="partner-nick" placeholder="Ник собеседника" style="width:100%; padding:16px; background:#222; color:white; border:none; border-radius:50px; margin-bottom:20px; font-size:18px;">
+      <div style="display:flex; gap:15px;">
+        <button onclick="createPrivate()" style="flex:1; background:var(--astik); color:#000; padding:16px; border-radius:50px; font-weight:bold;">Создать</button>
+        <button onclick="document.getElementById('create-dialog').style.display='none'" style="flex:1; background:#333; color:white; padding:16px; border-radius:50px;">Отмена</button>
       </div>
     </div>
   </div>
 
 <script>
-// === ТВОЙ FIREBASE (уже вставлен) ===
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
   authDomain: "test3-88cee.firebaseapp.com",
@@ -96,118 +94,139 @@ const firebaseConfig = {
   messagingSenderId: "469479851370",
   appId: "1:469479851370:web:915e95767b012c281e1113"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let myName = localStorage.getItem('astik_nick') || '';
 if (!myName) {
-  myName = prompt("Введи свой ник:", "Гость" + Math.floor(Math.random()*9999)) || "Гость";
-  localStorage.setItem('astik_nick', myName.trim());
-  myName = myName.trim();
+  myName = prompt("Введи свой ник:", "Гость" + Math.floor(Math.random()*9999)).trim();
+  localStorage.setItem('astik_nick', myName);
 }
-
 let currentChatId = null;
 
-// Создать новую личку
-function createPrivateChat() {
-  const chatId = Date.now().toString(36) + Math.random().toString(36).substr(2,5);
-  const link = location.origin + location.pathname + "?room=" + chatId;
+// Генерация ID чата между двумя людьми
+function getChatId(a, b) {
+  return [a.toLowerCase(), b.toLowerCase()].sort().join('_');
+}
 
-  db.ref('private_chats/' + chatId).set({
-    createdBy: myName,
-    createdAt: Date.now(),
-    title: "Личная переписка"
+// Показать диалог создания лички
+function showCreateDialog() {
+  document.getElementById('create-dialog').style.display = 'flex';
+  document.getElementById('partner-nick').focus();
+}
+
+// Создать личку
+function createPrivate() {
+  const partner = document.getElementById('partner-nick').value.trim();
+  if (!partner || partner === myName) { alert("Введи чужой ник!"); return; }
+  
+  const chatId = getChatId(myName, partner);
+  db.ref('chats/' + chatId).set({
+    users: [myName, partner],
+    lastMessage: "...",
+    timestamp: Date.now()
+  }, () => {
+    document.getElementById('create-dialog').style.display = 'none';
+    openChat(chatId, partner);
   });
-
-  navigator.clipboard.writeText(link);
-  const notif = document.createElement('div');
-  notif.className = 'copy-notify';
-  notif.textContent = 'Ссылка скопирована!';
-  document.body.appendChild(notif);
-  setTimeout(() => notif.remove(), 2000);
-
-  alert("Ссылка на личную переписку скопирована!\n\n" + link);
-  addPrivateChatToList(chatId, "Новый собеседник");
 }
 
 // Открыть чат
 function openChat(id, title) {
   currentChatId = id;
-  document.getElementById('chat-list-view').classList.add('hidden');
+  document.getElementById('list-view').style.display = 'none';
   document.getElementById('chat-view').style.display = 'flex';
   document.getElementById('chat-title').textContent = title;
   document.getElementById('messages').innerHTML = '';
 
-  const ref = db.ref((id === 'public' ? 'public_chat' : 'private_chats/' + id) + '/messages').limitToLast(50);
-  ref.on('child_added', snap => {
-    const m = snap.val();
-    addMessage(m.text, m.name, m.time);
+  const ref = db.ref('chats/' + id + '/messages').limitToLast(100);
+  ref.on('child_added', s => {
+    const m = s.val();
+    addMessage(m.text, m.from, m.time);
   });
 }
 
-function addMessage(text, name, time) {
+function addMessage(text, from, time) {
   const div = document.createElement('div');
-  div.className = 'msg ' + (name === myName ? 'me' : 'other');
-  div.innerHTML = `${text}<div class="time">${new Date(time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>`;
+  div.className = 'msg ' + (from === myName ? 'me' : 'other');
+  div.innerHTML = `${text}<div class="time">${new Date(time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
   document.getElementById('messages').appendChild(div);
-  div.scrollIntoView({ behavior: 'smooth' });
+  div.scrollIntoView({behavior:'smooth'});
 }
 
-function sendMessage() {
+function send() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text || !currentChatId) return;
 
-  const path = currentChatId === 'public' ? 'public_chat' : 'private_chats/' + currentChatId;
-  db.ref(path + '/messages').push({
-    name: myName,
+  db.ref('chats/' + currentChatId + '/messages').push({
+    from: myName,
     text: text,
     time: Date.now()
   });
+
+  db.ref('chats/' + currentChatId).update({
+    lastMessage: text,
+    timestamp: Date.now()
+  });
+
   input.value = '';
 }
 
-function backToList() {
+function back() {
   document.getElementById('chat-view').style.display = 'none';
-  document.getElementById('chat-list-view').classList.remove('hidden');
+  document.getElementById('list-view').style.display = 'block';
+  loadMyChats();
 }
 
-// Проверка ?room= в ссылке
-const params = new URLSearchParams(location.search);
-const room = params.get('room');
-if (room) {
-  openChat(room, "Личная переписка");
-  history.replaceState(null, null, location.pathname);
+// Загрузка всех моих личек
+function loadMyChats() {
+  document.getElementById('private-list').innerHTML = '';
+  db.ref('chats').orderByChild('timestamp').on('value', snap => {
+    document.getElementById('private-list').innerHTML = '';
+    snap.forEach(child => {
+      const chat = child.val();
+      const id = child.key;
+      if (chat.users && chat.users.includes(myName)) {
+        const partner = chat.users.find(u => u !== myName);
+        if (id !== 'public') {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.innerHTML = `<div class="chat-item" onclick="openChat('${id}','${partner}')">
+            <i class="fas fa-user"></i>
+            <div>
+              <div class="chat-name">${partner}</div>
+              <div class="chat-preview">${chat.lastMessage || 'Новых сообщений нет'}</div>
+            </div>
+          </div>`;
+          document.getElementById('private-list').prepend(div);
+        }
+      }
+    });
+  });
 }
 
-// Загрузка твоих личек
-db.ref('private_chats').on('child_added', snap => {
-  const chat = snap.val();
-  if (chat.createdBy === myName) {
-    addPrivateChatToList(snap.key, chat.title || "Личка");
-  }
-});
+// Общий чат (отдельная ветка)
+function openChat(id, title) {
+  if (id === 'public') title = 'Общий чат';
+  currentChatId = id;
+  document.getElementById('list-view').style.display = 'none';
+  document.getElementById('chat-view').style.display = 'flex';
+  document.getElementById('chat-title').textContent = title;
+  document.getElementById('messages').innerHTML = '';
 
-function addPrivateChatToList(id, title) {
-  if (document.getElementById('priv-' + id)) return;
-  const container = document.getElementById('private-chats-list');
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.innerHTML = `<div class="chat-item" onclick="openChat('${id}','${title}')">
-    <i class="fas fa-lock"></i>
-    <div>
-      <div class="chat-name">${title}</div>
-      <div class="chat-preview">Личная переписка</div>
-    </div>
-  </div>`;
-  div.id = 'priv-' + id;
-  container.appendChild(div);
+  const path = id === 'public' ? 'public_chat/messages' : 'chats/' + id + '/messages';
+  db.ref(path).limitToLast(100).on('child_added', s => {
+    const m = s.val();
+    addMessage(m.text || m.message, m.name || m.from, m.time || m.timestamp);
+  });
 }
+
+loadMyChats();
 
 // Enter = отправить
-document.getElementById('msg-input')?.addEventListener('keypress', e => {
-  if (e.key === 'Enter') sendMessage();
+document.getElementById('msg-input').addEventListener('keypress', e => {
+  if (e.key === 'Enter') send();
 });
 </script>
 </body>
