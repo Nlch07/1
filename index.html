@@ -2,50 +2,133 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astik Chat</title>
-  <meta name="theme-color" content="#00ff9d">
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Astik Messenger</title>
+  <meta name="theme-color" content="#128c7e">
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
-    :root { --astik: #00ff9d; --bg: #000; --card: #111; --text: #fff; }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system,system-ui,"Segoe UI",Roboto,sans-serif; background:#000; color:#fff; height:100vh; display:flex; flex-direction:column; }
-    
-    header { background:#008c6e; color:white; padding:16px; text-align:center; font-weight:bold; font-size:19px; border-radius:20px 20px 0 0; position:relative; }
-    .edit-nick { position:absolute; right:16px; top:16px; font-size:14px; opacity:0.8; cursor:pointer; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      background:#000;color:#fff;font-family:-apple-system,system-ui,sans-serif;
+      height:100dvh;display:flex;align-items:flex-end;justify-content:center;
+      padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      overflow:hidden;
+    }
+    #app{
+      width:100%;max-width:480px;height:100dvh;
+      background:#0b141a;border-radius:28px 28px 0 0;
+      overflow:hidden;box-shadow:0 -20px 80px rgba(0,0,0,0.9);
+      position:relative;display:flex;flex-direction:column;
+    }
+    #app::before{
+      content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);
+      width:140px;height:5px;background:#333;border-radius:10px;z-index:10;
+    }
 
-    #chat-list { flex:1; overflow-y:auto; padding:10px; }
-    .chat-item { display:flex; align-items:center; padding:14px; background:var(--card); margin-bottom:10px; border-radius:16px; cursor:pointer; }
-    .avatar { width:56px; height:56px; border-radius:50%; background:var(--astik); color:#000; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:22px; margin-right:14px; flex-shrink:0; }
-    .info { flex:1; }
-    .chat-name { font-weight:600; font-size:17px; }
-    .last-msg { font-size:14px; color:#aaa; margin-top:4px; }
+    header{
+      background:#128c7e;padding:16px 18px;color:white;font-size:21px;font-weight:600;
+      text-align:center;position:relative;z-index:5;
+    }
+    .edit-nick{position:absolute;right:18px;top:16px;font-size:24px;cursor:pointer;opacity:0.85}
 
-    #chat-screen { display:none; flex-direction:column; height:100%; background:#000; }
-    #chat-header { background:#008c6e; padding:16px; display:flex; align-items:center; border-radius:20px 20px 0 0; }
-    .back-btn { background:none; border:none; color:white; font-size:26px; cursor:pointer; margin-right:12px; }
-    #chat-messages { flex:1; overflow-y:auto; padding:16px; }
-    .message { max-width:78%; margin:8px 0; padding:11px 16px; border-radius:18px; word-wrap:break-word; }
-    .me { background:var(--astik); color:#000; align-self:flex-end; margin-left:auto; border-bottom-right-radius:4px; }
-    .other { background:#222; align-self:flex-start; border-bottom-left-radius:4px; }
-    .time { font-size:11px; color:#888; margin-top:5px; text-align:right; }
+    #main{display:none;flex-direction:column;height:100%}
+    #chat-list{flex:1;overflow-y:auto;background:#11141a;padding:8px 0}
+    .chat-item{
+      padding:14px 18px;display:flex;align-items:center;gap:16px;
+      cursor:pointer;transition:0.15s;position:relative;
+    }
+    .chat-item:active{background:#1a242e}
+    .avatar{
+      width:58px;height:58px;border-radius:50%;background:#25d366;color:#000;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:bold;font-size:24px;flex-shrink:0;
+    }
+    .info{flex:1;min-width:0}
+    .chat-name{font-size:18px;font-weight:500}
+    .last-msg{font-size:14.8px;color:#b0b7c0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .unread{
+      background:#25d366;color:#000;padding:4px 9px;border-radius:12px;
+      font-size:12px;font-weight:bold;min-width:20px;text-align:center;
+    }
 
-    .input-bar { padding:12px; background:#111; display:flex; gap:10px; align-items:center; }
-    #msg-input { flex:1; padding:14px 18px; background:#222; color:white; border:none; border-radius:30px; font-size:16px; }
-    #send-btn { background:var(--astik); color:#000; border:none; width:50px; height:50px; border-radius:50%; cursor:pointer; font-size:20px; font-weight:bold; }
+    #chat-screen{display:none;flex-direction:column;height:100%}
+    #chat-header{
+      background:#128c7e;padding:14px 18px;display:flex;align-items:center;gap:16px;position:relative;
+    }
+    .back-btn{
+      position:absolute;left:14px;top:12px;background:none;border:none;color:white;
+      font-size:28px;cursor:pointer;
+    }
+    #chat-messages{
+      flex:1;overflow-y:auto;background:#0b141a;padding:12px 10px;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .message{
+      max-width:78%;padding:9px 14px;border-radius:18px;line-height:1.45;
+      word-wrap:break-word;position:relative;
+    }
+    .sent{
+      align-self:flex-end;background:#005c4b;color:white;
+      border-bottom-right-radius:4px;
+    }
+    .received{
+      align-self:flex-start;background:#262d31;color:white;
+      border-bottom-left-radius:4px;
+    }
+    .msg-text{margin-bottom:4px}
+    .msg-time{font-size:11.5px;opacity:0.7;text-align:right}
 
-    .new-chat-btn { position:fixed; bottom:25px; right:25px; background:var(--astik); color:#000; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; cursor:pointer; box-shadow:0 4px 20px rgba(0,255,157,0.4); z-index:100; }
+    .input-bar{
+      background:#11141a;padding:10px 14px;display:flex;align-items:center;gap:12px;
+    }
+    #msg-input{
+      flex:1;padding:14px 18px;background:#2a3942;border:none;border-radius:30px;
+      color:white;font-size:16.5px;outline:none;
+    }
+    #send-btn{
+      width:50px;height:50px;background:#25d366;border:none;border-radius:50%;
+      color:#000;font-size:22px;font-weight:bold;cursor:pointer;
+    }
+
+    #welcome{
+      position:absolute;inset:0;background:linear-gradient(135deg,#128c7e,#25d366);
+      display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100;
+    }
+    #welcome h1{font-size:42px;margin-bottom:16px}
+    #welcome input{
+      width:88%;padding:20px;border:none;border-radius:20px;font-size:19px;
+      text-align:center;margin:20px 0;outline:none;
+    }
+    #welcome button{
+      padding:18px 70px;background:white;color:#128c7e;border-radius:40px;
+      font-size:20px;font-weight:bold;border:none;cursor:pointer;
+    }
+
+    .new-chat{
+      position:fixed;bottom:28px;right:24px;background:#25d366;color:#000;
+      width:62px;height:62px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;font-size:36px;cursor:pointer;box-shadow:0 6px 25px rgba(37,211,102,0.5);
+      z-index:50;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Список чатов -->
+<div id="app">
+  <!-- Приветствие -->
+  <div id="welcome">
+    <h1>Astik</h1>
+    <p style="font-size:20px;margin-bottom:30px">Введи своё имя</p>
+    <input type="text" id="nameInput" placeholder="Твоё имя" maxlength="18">
+    <button onclick="start()">Войти</button>
+  </div>
+
+  <!-- Главный экран -->
   <div id="main">
     <header>
       Мои чаты
-      <span class="edit-nick" onclick="changeNick()">Edit</span>
+      <div class="edit-nick" onclick="changeName()">Edit</div>
     </header>
     <div id="chat-list">
       <div class="chat-item" onclick="openPublic()">
@@ -58,7 +141,7 @@
     </div>
   </div>
 
-  <!-- Экран чата -->
+  <!-- Чат -->
   <div id="chat-screen">
     <div id="chat-header">
       <button class="back-btn" onclick="back()">Back</button>
@@ -70,12 +153,13 @@
     <div id="chat-messages"></div>
     <div class="input-bar">
       <input type="text" id="msg-input" placeholder="Сообщение...">
-      <button id="send-btn" onclick="send()">Send</button>
+      <button id="send-btn">Send</button>
     </div>
   </div>
 
   <!-- Кнопка + -->
-  <div class="new-chat-btn" onclick="newChat()">+</div>
+  <div class="new-chat" onclick="newPrivate()">+</div>
+</div>
 
 <script>
 const firebaseConfig = {
@@ -90,98 +174,104 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let myName = localStorage.getItem('astik_nick') || '';
-if (!myName) {
-  myName = prompt("Твой ник:", "Гость" + Math.floor(Math.random()*9999)).trim() || "Гость";
-  localStorage.setItem('astik_nick', myName);
-}
-
+let myName = localStorage.getItem('astik_name') || '';
+let currentChatId = null;
 let currentPartner = null;
 
-// ID чата = сортировка ников
-function chatId(a, b) {
-  return [a.toLowerCase(), b.toLowerCase()].sort().join('_');
+if (myName) start();
+
+function start() {
+  if (!myName) {
+    myName = (document.getElementById('nameInput').value || 'Гость').trim();
+    if (!myName) return alert('Введите имя!');
+    localStorage.setItem('astik_name', myName);
+  }
+  document.getElementById('welcome').remove();
+  document.getElementById('main').style.display = 'flex';
+  loadChats();
 }
 
-// Смена ника
-function changeNick() {
-  const n = prompt("Новый ник:", myName);
+function changeName() {
+  const n = prompt('Новое имя:', myName);
   if (n && n.trim() && n.trim() !== myName) {
     myName = n.trim();
-    localStorage.setItem('astik_nick', myName);
+    localStorage.setItem('astik_name', myName);
     loadChats();
   }
 }
 
-// Новый чат — просто вводим ник
-function newChat() {
-  const nick = prompt("С кем начать чат?\nВведи ник:", "").trim();
-  if (!nick || nick === myName) return alert("Неправильный ник");
-  openPrivate(nick);
+function chatId(a, b) {
+  return [a.toLowerCase(), b.toLowerCase()].sort().join('_');
 }
 
-// Открыть личный чат
-function openPrivate(partner) {
-  currentPartner = partner;
-  document.getElementById('main').style.display = 'none';
-  document.getElementById('chat-screen').style.display = 'flex';
-  document.getElementById('partner-name').textContent = partner;
-  document.getElementById('partner-avatar').textContent = partner[0].toUpperCase();
-  document.getElementById('chat-messages').innerHTML = '';
-
-  const id = chatId(myName, partner);
-  db.ref(`chats/${id}/messages`).limitToLast(100).on('child_added', s => {
-    const m = s.val();
-    addMessage(m.text, m.from === myName);
-  });
+function newPrivate() {
+  const nick = prompt('С кем начать чат?\nВведите ник:').trim();
+  if (!nick || nick.toLowerCase() === myName.toLowerCase()) return alert('Некорректный ник');
+  openChat(nick);
 }
 
-// Общий чат
 function openPublic() {
+  currentChatId = 'public';
   currentPartner = null;
+  showChatScreen('Общий чат', 'G');
+  listenToMessages('public_messages');
+}
+
+function openChat(partner) {
+  currentChatId = chatId(myName, partner);
+  currentPartner = partner;
+  showChatScreen(partner, partner[0].toUpperCase());
+  listenToMessages(`private_chats/${currentChatId}/messages`);
+  markAsRead();
+}
+
+function showChatScreen(title, avatar) {
   document.getElementById('main').style.display = 'none';
   document.getElementById('chat-screen').style.display = 'flex';
-  document.getElementById('partner-name').textContent = "Общий чат";
-  document.getElementById('partner-avatar').textContent = "G";
+  document.getElementById('partner-name').textContent = title;
+  document.getElementById('partner-avatar').textContent = avatar;
   document.getElementById('chat-messages').innerHTML = '';
+}
 
-  db.ref('public_chat').limitToLast(100).on('child_added', s => {
+function listenToMessages(path) {
+  db.ref(path).limitToLast(200).on('child_added', s => {
     const m = s.val();
-    addMessage(m.text, m.name === myName, m.name);
+    const isMe = m.name === myName;
+    const div = document.createElement('div');
+    div.className = `message ${isMe ? 'sent' : 'received'}`;
+    div.innerHTML = `
+      <div class="msg-text">${m.text}</div>
+      <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>
+    `;
+    document.getElementById('chat-messages').appendChild(div);
+    div.scrollIntoView({behavior:'smooth'});
   });
 }
 
-function addMessage(text, isMe, senderName = null) {
-  const div = document.createElement('div');
-  div.className = `message ${isMe ? 'me' : 'other'}`;
-  const name = isMe ? '' : `<small style="color:#00ff9d;">${senderName}</small><br>`;
-  div.innerHTML = `${name}${text}`;
-  document.getElementById('chat-messages').appendChild(div);
-  div.scrollIntoView({behavior:'smooth'});
-}
-
-function send() {
+function sendMessage() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text) return;
+  const msg = { name: myName, text, time: Date.now() };
 
-  if (currentPartner) {
-    // Личный чат
-    const id = chatId(myName, currentPartner);
-    db.ref(`chats/${id}/messages`).push({
-      from: myName,
-      text: text,
-      time: Date.now()
-    });
+  if (currentChatId === 'public') {
+    db.ref('public_messages').push(msg);
   } else {
-    // Общий чат
-    db.ref('public_chat').push({
-      name: myName,
-      text: text,
-      time: Date.now()
+    const path = `private_chats/${currentChatId}/messages`;
+    db.ref(path).push(msg);
+    db.ref(`private_chats/${currentChatId}`).update({
+      lastMsg: text.substring(0,40)+(text.length>40?'...':''),
+      lastTime: Date.now(),
+      [`unread/${currentPartner.toLowerCase()}`]: firebase.database.ServerValue.increment(1)
     });
   }
   input.value = '';
+}
+
+function markAsRead() {
+  if (currentChatId !== 'public') {
+    db.ref(`private_chats/${currentChatId}/unread/${myName.toLowerCase()}`).set(0);
+  }
 }
 
 function back() {
@@ -190,49 +280,47 @@ function back() {
   loadChats();
 }
 
-// Загрузка списка чатов
 function loadChats() {
-  db.ref('chats').on('value', snap => {
-    const list = document.getElementById('chat-list');
-    list.innerHTML = `<div class="chat-item" onclick="openPublic()">
-      <div class="avatar">G</div>
-      <div class="info">
-        <div class="chat-name">Общий чат</div>
-        <div class="last-msg">Все пишут сюда</div>
-      </div>
-    </div>`;
+  const container = document.getElementById('chat-list');
+  container.innerHTML = `<div class="chat-item" onclick="openPublic()">
+    <div class="avatar">G</div>
+    <div class="info">
+      <div class="chat-name">Общий чат</div>
+      <div class="last-msg">Все пишут сюда</div>
+    </div>
+  </div>`;
+
+  db.ref('private_chats').orderByChild('lastTime').on('value', snap => {
+    const existing = container.querySelectorAll('.private');
+    existing.forEach(el => el.remove());
 
     snap.forEach(child => {
-      const chat = child.val();
+      const data = child.val();
       const id = child.key;
-      if (chat.messages) {
-        const users = id.split('_');
-        const partner = users.find(u => u !== myName.toLowerCase());
-        if (partner) {
-          const lastMsg = Object.values(chat.messages).pop();
-          const div = document.createElement('div');
-          div.className = 'chat-item';
-          div.onclick = () => openPrivate(partner.charAt(0).toUpperCase() + partner.slice(1));
-          div.innerHTML = `
-            <div class="avatar">${partner[0].toUpperCase()}</div>
-            <div class="info">
-              <div class="chat-name">${partner.charAt(0).toUpperCase() + partner.slice(1)}</div>
-              <div class="last-msg">${lastMsg?.text || 'Начните чат'}</div>
-            </div>
-          `;
-          list.appendChild(div);
-        }
+      const partner = id.split('_').find(u => u.toLowerCase() !== myName.toLowerCase());
+      if (partner) {
+        const unread = (data.unread && data.unread[myName.toLowerCase()]) || 0;
+        const item = document.createElement('div');
+        item.className = 'chat-item private';
+        item.onclick = () => openChat(partner);
+        item.innerHTML = `
+          <div class="avatar">${partner[0].toUpperCase()}</div>
+          <div class="info">
+            <div class="chat-name">${partner}</div>
+            <div class="last-msg">${data.lastMsg || 'Начните чат'}</div>
+          </div>
+          ${unread > 0 ? `<div class="unread">${unread}</div>` : ''}
+        `;
+        container.appendChild(item);
       }
     });
   });
 }
 
-// Старт
-loadChats();
-
-// Enter = отправить
-document.getElementById('msg-input')?.addEventListener('keypress', e => {
-  if (e.key === 'Enter') send();
+// Send button
+document.getElementById('send-btn').onclick = sendMessage;
+document.getElementById('msg-input').addEventListener('keypress', e => {
+  if (e.key === 'Enter') sendMessage();
 });
 </script>
 </body>
