@@ -252,6 +252,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      position: relative;
     }
     
     .message {
@@ -264,6 +265,18 @@
       animation: messageAppear 0.3s ease-out;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .message.active {
+      background: rgba(59, 130, 246, 0.1) !important;
+      transform: scale(1.02);
+    }
+    
+    .received:active {
+      background: rgba(59, 130, 246, 0.1);
+      transform: scale(1.02);
     }
     
     @keyframes messageAppear {
@@ -298,6 +311,7 @@
       margin-bottom: 6px;
       color: #3b82f6;
       opacity: 0.9;
+      user-select: none;
     }
     
     .sent .msg-sender {
@@ -308,6 +322,7 @@
       margin-bottom: 8px;
       font-size: 15.5px;
       line-height: 1.4;
+      user-select: none;
     }
     
     .msg-time {
@@ -315,6 +330,7 @@
       opacity: 0.8;
       text-align: right;
       font-weight: 500;
+      user-select: none;
     }
     
     .received .msg-time {
@@ -334,6 +350,8 @@
       gap: 14px;
       border-top: 1px solid #dbeafe;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+      position: relative;
+      z-index: 50;
     }
     
     #msg-input {
@@ -379,6 +397,74 @@
     #send-btn:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Контекстное меню для сообщений */
+    .message-context-menu {
+      position: fixed;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      overflow: hidden;
+      min-width: 200px;
+      border: 1px solid #dbeafe;
+      animation: menuAppear 0.2s ease-out;
+    }
+    
+    @keyframes menuAppear {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .context-menu-item {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .context-menu-item:last-child {
+      border-bottom: none;
+    }
+    
+    .context-menu-item:hover {
+      background: #f0f9ff;
+    }
+    
+    .context-menu-item:active {
+      background: #e0f2fe;
+    }
+    
+    .context-menu-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .context-menu-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1e3a8a;
+    }
+    
+    .context-menu-close {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      background: transparent;
     }
 
     /* Welcome Screen */
@@ -466,32 +552,6 @@
       transform: translateY(0);
     }
 
-    /* New Chat Button */
-    .new-chat {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: white;
-      width: 66px;
-      height: 66px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 34px;
-      cursor: pointer;
-      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-      z-index: 50;
-      transition: all 0.3s;
-      border: 4px solid white;
-    }
-    
-    .new-chat:hover {
-      transform: scale(1.1) rotate(90deg);
-      box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
-    }
-
     /* Scrollbar Styling */
     ::-webkit-scrollbar {
       width: 8px;
@@ -520,14 +580,6 @@
       
       #app::before {
         display: none;
-      }
-      
-      .new-chat {
-        bottom: 24px;
-        right: 24px;
-        width: 60px;
-        height: 60px;
-        font-size: 30px;
       }
       
       header {
@@ -584,10 +636,9 @@
       <button id="send-btn">↑</button>
     </div>
   </div>
-
 </div>
 
-<!-- ОБНОВЛЕННЫЙ СКРИПТ С ПРОВЕРКОЙ ИМЕН -->
+<!-- ОБНОВЛЕННЫЙ СКРИПТ -->
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
@@ -604,13 +655,23 @@ const db = firebase.database();
 let myName = localStorage.getItem('astik_name') || '';
 let currentChatId = null;
 let currentPartner = null;
+let currentContextMessage = null;
+let userActivityInterval = null;
 
 if (myName) start();
 
-// Функция проверки, занято ли имя
+// Функция проверки, занято ли имя (строгая проверка с таймером)
 function checkNameExists(name) {
   return db.ref('users/' + name.toLowerCase()).once('value').then(snap => {
-    return snap.exists();
+    if (!snap.exists()) return false;
+    
+    const userData = snap.val();
+    // Проверяем, что пользователь онлайн (последняя активность менее 2 минут назад)
+    const twoMinutesAgo = Date.now() - 2 * 60 * 1000;
+    if (userData.lastSeen && userData.lastSeen > twoMinutesAgo) {
+      return true; // Пользователь все еще активен
+    }
+    return false; // Пользователь неактивен
   });
 }
 
@@ -619,8 +680,20 @@ function registerUser(name) {
   db.ref('users/' + name.toLowerCase()).set({
     name: name,
     online: true,
-    lastSeen: Date.now()
+    lastSeen: Date.now(),
+    registeredAt: Date.now(),
+    ip: 'unknown' // В реальном приложении можно добавить IP
   });
+}
+
+// Обновление активности пользователя
+function updateUserLastSeen() {
+  if (myName) {
+    db.ref('users/' + myName.toLowerCase()).update({
+      lastSeen: Date.now(),
+      online: true
+    });
+  }
 }
 
 // Удаление имени при выходе
@@ -630,16 +703,60 @@ function unregisterUser() {
   }
 }
 
+// Очистка неактивных пользователей
+function cleanupInactiveUsers() {
+  db.ref('users').once('value').then(snap => {
+    const now = Date.now();
+    const tenMinutesAgo = now - 10 * 60 * 1000;
+    
+    const updates = {};
+    
+    snap.forEach(child => {
+      const userData = child.val();
+      const userName = userData.name;
+      
+      if (userData.lastSeen && userData.lastSeen < tenMinutesAgo) {
+        // Пользователь неактивен более 10 минут - помечаем как оффлайн
+        updates['users/' + userName.toLowerCase() + '/online'] = false;
+      } else if (userData.lastSeen && userData.lastSeen > tenMinutesAgo && !userData.online) {
+        // Пользователь снова активен - помечаем как онлайн
+        updates['users/' + userName.toLowerCase() + '/online'] = true;
+      }
+    });
+    
+    if (Object.keys(updates).length > 0) {
+      db.ref().update(updates);
+    }
+  });
+}
+
 // Проверка имени при входе
 function start() {
   if (!myName) {
     const inputName = (document.getElementById('nameInput').value || 'Гость').trim();
     if (!inputName) return alert('Введите имя!');
+    if (inputName.length < 2) return alert('Имя должно быть не менее 2 символов!');
+    if (inputName.length > 18) return alert('Имя должно быть не более 18 символов!');
     
     // Проверяем, занято ли имя (без учета регистра)
     checkNameExists(inputName.toLowerCase()).then(exists => {
       if (exists) {
-        alert('⚠️ Это имя уже занято. Пожалуйста, выберите другое имя.');
+        // Дополнительная проверка - может пользователь это я?
+        const savedName = localStorage.getItem('astik_name');
+        if (savedName && savedName.toLowerCase() === inputName.toLowerCase()) {
+          // Это я, просто зашел повторно
+          myName = savedName;
+          localStorage.setItem('astik_name', myName);
+          updateUserLastSeen(); // Обновляем время последней активности
+          
+          document.getElementById('welcome').remove();
+          document.getElementById('main').style.display = 'flex';
+          loadChats();
+          startUserActivityTracking();
+          return;
+        }
+        
+        alert('⚠️ Это имя уже занято активным пользователем. Пожалуйста, выберите другое имя.');
         return;
       }
       
@@ -652,13 +769,28 @@ function start() {
       document.getElementById('welcome').remove();
       document.getElementById('main').style.display = 'flex';
       loadChats();
+      startUserActivityTracking();
     });
   } else {
     // Если имя уже было сохранено в localStorage
+    updateUserLastSeen(); // Обновляем время последней активности
     document.getElementById('welcome').remove();
     document.getElementById('main').style.display = 'flex';
     loadChats();
+    startUserActivityTracking();
   }
+}
+
+// Запуск отслеживания активности пользователя
+function startUserActivityTracking() {
+  // Обновляем активность каждую минуту
+  if (userActivityInterval) clearInterval(userActivityInterval);
+  userActivityInterval = setInterval(updateUserLastSeen, 60000);
+  
+  // Обновляем активность при действиях пользователя
+  document.addEventListener('click', updateUserLastSeen);
+  document.addEventListener('keypress', updateUserLastSeen);
+  document.addEventListener('touchstart', updateUserLastSeen);
 }
 
 // Проверка имени при смене
@@ -671,10 +803,13 @@ function changeName() {
     return alert('Это ваше текущее имя!');
   }
   
+  if (trimmedName.length < 2) return alert('Имя должно быть не менее 2 символов!');
+  if (trimmedName.length > 18) return alert('Имя должно быть не более 18 символов!');
+  
   // Проверяем, занято ли новое имя
   checkNameExists(trimmedName.toLowerCase()).then(exists => {
     if (exists) {
-      alert('⚠️ Это имя уже занято. Пожалуйста, выберите другое имя.');
+      alert('⚠️ Это имя уже занято активным пользователем. Пожалуйста, выберите другое имя.');
       return;
     }
     
@@ -693,22 +828,6 @@ function changeName() {
 
 function chatId(a, b) {
   return [a.toLowerCase(), b.toLowerCase()].sort().join('_');
-}
-
-function newPrivate() {
-  const nick = prompt('С кем начать чат?\nВведите ник:').trim();
-  if (!nick) return alert('Введите имя пользователя!');
-  if (nick.toLowerCase() === myName.toLowerCase()) return alert('Нельзя начать чат с самим собой!');
-  
-  // Проверяем, существует ли такой пользователь
-  checkNameExists(nick.toLowerCase()).then(exists => {
-    if (!exists) {
-      alert('Пользователь с таким именем не найден.');
-      return;
-    }
-    
-    openChat(nick);
-  });
 }
 
 function openPublic() {
@@ -732,9 +851,170 @@ function showChatScreen(title, avatar) {
   document.getElementById('partner-name').textContent = title;
   document.getElementById('partner-avatar').textContent = avatar;
   document.getElementById('chat-messages').innerHTML = '';
+  closeContextMenu(); // Закрываем меню если открыто
+}
+
+// Показать контекстное меню для сообщения
+function showMessageContextMenu(messageDiv, messageData) {
+  // Удаляем старое меню если есть
+  const oldMenu = document.querySelector('.message-context-menu');
+  const oldClose = document.querySelector('.context-menu-close');
+  if (oldMenu) oldMenu.remove();
+  if (oldClose) oldClose.remove();
+  
+  // Получаем позицию сообщения
+  const rect = messageDiv.getBoundingClientRect();
+  
+  // Создаем оверлей для закрытия меню
+  const closeOverlay = document.createElement('div');
+  closeOverlay.className = 'context-menu-close';
+  closeOverlay.onclick = closeContextMenu;
+  document.body.appendChild(closeOverlay);
+  
+  // Создаем контекстное меню
+  const menu = document.createElement('div');
+  menu.className = 'message-context-menu';
+  
+  // Позиционируем меню так, чтобы оно не выходило за экран
+  let topPosition = rect.top + rect.height / 2;
+  let leftPosition = rect.left;
+  
+  // Если меню выходит за правый край экрана, позиционируем слева
+  if (leftPosition + 200 > window.innerWidth) {
+    leftPosition = rect.right - 200;
+  }
+  
+  // Если меню выходит за верхний край экрана, позиционируем ниже
+  if (topPosition - 100 < 0) {
+    topPosition = rect.bottom;
+  }
+  
+  menu.style.top = `${topPosition}px`;
+  menu.style.left = `${leftPosition}px`;
+  
+  // Только для чужих сообщений в общем чате
+  if (currentChatId === 'public' && messageData.name !== myName) {
+    menu.innerHTML = `
+      <div class="context-menu-item" onclick="openPrivateChatWith('${messageData.name}')">
+        <div class="context-menu-icon">💬</div>
+        <div class="context-menu-text">Написать в ЛС</div>
+      </div>
+      <div class="context-menu-item" onclick="closeContextMenu()">
+        <div class="context-menu-icon">✕</div>
+        <div class="context-menu-text">Отмена</div>
+      </div>
+    `;
+  } else {
+    menu.innerHTML = `
+      <div class="context-menu-item" onclick="closeContextMenu()">
+        <div class="context-menu-icon">✕</div>
+        <div class="context-menu-text">Закрыть</div>
+      </div>
+    `;
+  }
+  
+  document.body.appendChild(menu);
+  
+  // Анимация появления
+  setTimeout(() => {
+    menu.style.transform = 'translateY(-50%)';
+  }, 10);
+}
+
+// Закрыть контекстное меню
+function closeContextMenu() {
+  const menu = document.querySelector('.message-context-menu');
+  const closeOverlay = document.querySelector('.context-menu-close');
+  if (menu) menu.remove();
+  if (closeOverlay) closeOverlay.remove();
+  
+  // Убираем активный класс с сообщения
+  if (currentContextMessage) {
+    currentContextMessage.classList.remove('active');
+    currentContextMessage = null;
+  }
+}
+
+// Открыть приватный чат с пользователем
+function openPrivateChatWith(username) {
+  closeContextMenu();
+  
+  // Проверяем, существует ли пользователь
+  checkNameExists(username.toLowerCase()).then(exists => {
+    if (!exists) {
+      alert('Пользователь больше не в сети.');
+      return;
+    }
+    
+    // Открываем чат
+    openChat(username);
+  });
+}
+
+// Обработчики для длительного нажатия
+function setupMessageLongPress(messageDiv, messageData) {
+  let timer;
+  let isLongPress = false;
+  
+  messageDiv.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    timer = setTimeout(() => {
+      isLongPress = true;
+      showMessageContextMenu(messageDiv, messageData);
+      messageDiv.classList.add('active');
+      currentContextMessage = messageDiv;
+    }, 500); // 0.5 секунды для длительного нажатия
+  });
+  
+  messageDiv.addEventListener('touchend', function(e) {
+    clearTimeout(timer);
+    if (!isLongPress) {
+      // Обычный клик - ничего не делаем
+    }
+    isLongPress = false;
+  });
+  
+  messageDiv.addEventListener('touchmove', function(e) {
+    clearTimeout(timer);
+    isLongPress = false;
+    messageDiv.classList.remove('active');
+  });
+  
+  // Для компьютера
+  messageDiv.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return; // Только левая кнопка мыши
+    
+    timer = setTimeout(() => {
+      isLongPress = true;
+      showMessageContextMenu(messageDiv, messageData);
+      messageDiv.classList.add('active');
+      currentContextMessage = messageDiv;
+    }, 500);
+  });
+  
+  messageDiv.addEventListener('mouseup', function(e) {
+    clearTimeout(timer);
+    if (!isLongPress && e.button === 0) {
+      // Обычный клик - ничего не делаем
+    }
+    isLongPress = false;
+  });
+  
+  messageDiv.addEventListener('mouseleave', function(e) {
+    clearTimeout(timer);
+    isLongPress = false;
+    messageDiv.classList.remove('active');
+  });
+  
+  messageDiv.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // Отключаем стандартное контекстное меню
+  });
 }
 
 function listenToMessages(path) {
+  // Удаляем старые слушатели
+  db.ref(path).off('child_added');
+  
   db.ref(path).limitToLast(200).on('child_added', s => {
     const m = s.val();
     const isMe = m.name === myName;
@@ -749,7 +1029,14 @@ function listenToMessages(path) {
       <div class="msg-text">${m.text}</div>
       <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>
     `;
-    document.getElementById('chat-messages').appendChild(div);
+    
+    // Добавляем обработчик длительного нажатия для чужих сообщений в общем чате
+    if (currentChatId === 'public' && !isMe) {
+      setupMessageLongPress(div, m);
+    }
+    
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.appendChild(div);
     div.scrollIntoView({behavior:'smooth'});
   });
 }
@@ -758,6 +1045,10 @@ function sendMessage() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text) return;
+  
+  // Обновляем активность перед отправкой
+  updateUserLastSeen();
+  
   const msg = { name: myName, text, time: Date.now() };
 
   if (currentChatId === 'public') {
@@ -781,9 +1072,17 @@ function markAsRead() {
 }
 
 function back() {
+  // Удаляем слушатели сообщений
+  if (currentChatId === 'public') {
+    db.ref('public_messages').off('child_added');
+  } else if (currentChatId) {
+    db.ref(`private_chats/${currentChatId}/messages`).off('child_added');
+  }
+  
   document.getElementById('chat-screen').style.display = 'none';
   document.getElementById('main').style.display = 'flex';
   loadChats();
+  closeContextMenu(); // Закрываем меню если открыто
 }
 
 function loadChats() {
@@ -833,7 +1132,7 @@ function loadChats() {
           <div class="chat-name">${chat.partner}</div>
           <div class="last-msg">${chat.lastMsg}</div>
         </div>
-        ${chat.unread > 0 ? `<div class="unread">${chat.unread}</div>` : ''}
+        ${chat.unread > 0 ? `<div class="unread">${unread}</div>` : ''}
       `;
       container.appendChild(item);
     });
@@ -842,7 +1141,26 @@ function loadChats() {
 
 // Удаляем имя при закрытии страницы
 window.addEventListener('beforeunload', function() {
-  unregisterUser();
+  if (myName) {
+    // Помечаем как оффлайн вместо полного удаления
+    db.ref('users/' + myName.toLowerCase()).update({
+      online: false,
+      lastSeen: Date.now()
+    });
+  }
+  if (userActivityInterval) clearInterval(userActivityInterval);
+});
+
+// Запускаем очистку неактивных пользователей при старте
+cleanupInactiveUsers();
+// И каждые 5 минут
+setInterval(cleanupInactiveUsers, 5 * 60 * 1000);
+
+// Закрытие контекстного меню при клике вне его
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.message-context-menu') && !e.target.closest('.message')) {
+    closeContextMenu();
+  }
 });
 
 // Send button
