@@ -255,7 +255,7 @@
     }
     
     .message {
-      max-width: 75%;
+      max-width: 78%;
       padding: 14px 18px;
       border-radius: 24px;
       line-height: 1.5;
@@ -290,6 +290,18 @@
       background: white;
       color: #1f2937;
       border-bottom-left-radius: 8px;
+    }
+    
+    .msg-sender {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #3b82f6;
+      opacity: 0.9;
+    }
+    
+    .sent .msg-sender {
+      display: none;
     }
     
     .msg-text {
@@ -574,9 +586,10 @@
   </div>
 
   <!-- Кнопка + -->
+  <div class="new-chat" onclick="newPrivate()">+</div>
 </div>
 
-<!-- СКРИПТ БЕЗ ИЗМЕНЕНИЙ -->
+<!-- ОБНОВЛЕННЫЙ СКРИПТ -->
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCysKcXFVoqWDIQzkdObB-9sgm54cRGyp0",
@@ -655,7 +668,12 @@ function listenToMessages(path) {
     const isMe = m.name === myName;
     const div = document.createElement('div');
     div.className = `message ${isMe ? 'sent' : 'received'}`;
+    
+    // Для общего чата показываем отправителя, для приватных скрываем
+    const showSender = (currentChatId === 'public' && !isMe);
+    
     div.innerHTML = `
+      ${showSender ? `<div class="msg-sender">${m.name}</div>` : ''}
       <div class="msg-text">${m.text}</div>
       <div class="msg-time">${new Date(m.time).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}</div>
     `;
@@ -710,25 +728,42 @@ function loadChats() {
     const existing = container.querySelectorAll('.private');
     existing.forEach(el => el.remove());
 
+    // Собираем все чаты в массив
+    const chats = [];
+    
     snap.forEach(child => {
       const data = child.val();
       const id = child.key;
       const partner = id.split('_').find(u => u.toLowerCase() !== myName.toLowerCase());
       if (partner) {
         const unread = (data.unread && data.unread[myName.toLowerCase()]) || 0;
-        const item = document.createElement('div');
-        item.className = 'chat-item private';
-        item.onclick = () => openChat(partner);
-        item.innerHTML = `
-          <div class="avatar">${partner[0].toUpperCase()}</div>
-          <div class="info">
-            <div class="chat-name">${partner}</div>
-            <div class="last-msg">${data.lastMsg || 'Начните чат'}</div>
-          </div>
-          ${unread > 0 ? `<div class="unread">${unread}</div>` : ''}
-        `;
-        container.appendChild(item);
+        chats.push({
+          partner,
+          lastTime: data.lastTime || 0,
+          lastMsg: data.lastMsg || 'Начните чат',
+          unread,
+          id
+        });
       }
+    });
+
+    // Сортируем по lastTime (новые выше)
+    chats.sort((a, b) => b.lastTime - a.lastTime);
+
+    // Добавляем отсортированные чаты
+    chats.forEach(chat => {
+      const item = document.createElement('div');
+      item.className = 'chat-item private';
+      item.onclick = () => openChat(chat.partner);
+      item.innerHTML = `
+        <div class="avatar">${chat.partner[0].toUpperCase()}</div>
+        <div class="info">
+          <div class="chat-name">${chat.partner}</div>
+          <div class="last-msg">${chat.lastMsg}</div>
+        </div>
+        ${chat.unread > 0 ? `<div class="unread">${chat.unread}</div>` : ''}
+      `;
+      container.appendChild(item);
     });
   });
 }
